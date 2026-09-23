@@ -66,6 +66,34 @@ Todos los errores devuelven el mismo formato JSON, generado por `GlobalException
 | 409 | Recurso duplicado o eliminación que dejaría datos huérfanos |
 | 500 | Error interno no controlado |
 
+## Seguridad Implementada
+
+Autenticación con JWT y sin sesiones en el servidor (`SessionCreationPolicy.STATELESS`): cada request a una ruta protegida debe llevar `Authorization: Bearer <token>`.
+
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| POST | `/api/v1/auth/register` | Público | Crea la cuenta (`name`, `email`, `password` mín. 8 caracteres, `country`/`city` opcionales) y devuelve de una el par de tokens, sin pedir login aparte |
+| POST | `/api/v1/auth/login` | Público | Valida email y contraseña, devuelve un par de tokens nuevo |
+| POST | `/api/v1/auth/refresh` | Público | Cambia un refresh token vigente por un access token nuevo, sin pedir contraseña |
+
+Las contraseñas se guardan hasheadas con BCrypt, nunca en texto plano.
+
+**Tokens.** Hay dos para no forzar un login a cada rato pero tampoco dejar un token robado activo para siempre: el access token dura 15 minutos y es el que va en cada request protegido; el refresh token dura 7 días y solo sirve para pedir un access token nuevo en `/auth/refresh`. Cada uno lleva un claim `type` (`access`/`refresh`) para que no se puedan usar al revés.
+
+**Roles.** Todo usuario nace `USER`; el rol `ADMIN` se asigna manualmente en la base de datos. Los `GET` de genres, artistas, conciertos y venues son públicos; todo lo demás pide token, y crear, actualizar o eliminar esos recursos pide además `ADMIN` (`@PreAuthorize("hasRole('ADMIN')")` en cada controller). Sin token en una ruta protegida el backend responde 401; con un rol insuficiente responde 403.
+
+### Genre
+
+CRUD con el mismo patrón que los demás recursos: lectura pública, escritura solo ADMIN.
+
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| GET | `/api/v1/genres` | Público | Lista los géneros |
+| GET | `/api/v1/genres/{id}` | Público | Detalle de un género |
+| POST | `/api/v1/genres` | ADMIN | Crea un género (nombre único) |
+| PUT | `/api/v1/genres/{id}` | ADMIN | Actualiza un género |
+| DELETE | `/api/v1/genres/{id}` | ADMIN | Elimina un género |
+
 ## Modelo de Entidades
 
 ### Venue
@@ -107,7 +135,29 @@ Evento de un artista en un venue.
 | `artist` | Artist | Obligatorio, relación `ManyToOne` |
 | `venue` | Venue | Obligatorio, relación `ManyToOne` |
 
+### User
+
+Cuenta de la aplicación.
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `id` | Long | Clave primaria |
+| `name` | String | Obligatorio, máximo 100 caracteres |
+| `email` | String | Obligatorio y único, formato válido |
+| `password` | String | Obligatorio, se guarda hasheado con BCrypt |
+| `role` | Enum (`USER`, `ADMIN`) | `USER` por defecto al registrarse |
+| `country` / `city` | String | Opcionales |
+| `createdAt` | LocalDateTime | Se asigna sola al crear el usuario |
+
+### Genre
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `id` | Long | Clave primaria |
+| `name` | String | Obligatorio y único, máximo 50 caracteres |
+
 ### Relaciones
 
 - **Venue → Concert (uno a muchos):** un venue puede albergar muchos conciertos, y cada concierto ocurre en un solo venue.
 - **Artist → Concert (uno a muchos):** un artista puede dar múltiples conciertos, y cada concierto tiene un artista principal.
+- **Genre ↔ Artist (muchos a muchos):** un artista puede tener varios géneros y un género puede estar en varios artistas, mediante la tabla `artist_genres`. Se asignan con `genreIds` al crear o actualizar un artista, y se devuelven como `genres` en la respuesta.
