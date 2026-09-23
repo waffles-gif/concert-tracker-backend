@@ -26,13 +26,8 @@ public class Genre {
     @Column(nullable = false, unique = true, length = 50)
     private String name;
 
-    //@ManyToMany
-    //@JoinTable(
-      //      name = "genre_artists",
-        //    joinColumns = @JoinColumn(name = "genre_id"),
-          //  inverseJoinColumns = @JoinColumn(name = "artist_id")
-    //)
-    //private Set<Artist> artists = new HashSet<>();
+    @ManyToMany(mappedBy = "genres")
+    private Set<Artist> artists = new HashSet<>();
 
     protected Genre() {
     }
@@ -53,7 +48,7 @@ public class Genre {
         this.name = name;
     }
 
-//    public Set<Artist> getArtists() {
-  //      return artists;
-    //}
+    public Set<Artist> getArtists() {
+        return artists;
+    }
 }

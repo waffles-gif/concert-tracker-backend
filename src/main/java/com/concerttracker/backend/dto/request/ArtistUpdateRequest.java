@@ -3,6 +3,8 @@ package com.concerttracker.backend.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.util.Set;
+
 public class ArtistUpdateRequest {
 
     @NotBlank(message = "El nombre del artista es obligatorio")
@@ -17,6 +19,8 @@ public class ArtistUpdateRequest {
 
     @Size(max = 500, message = "La URL de la imagen no puede superar los 500 caracteres")
     private String imageUrl;
+
+    private Set<Long> genreIds;
 
     public ArtistUpdateRequest() {
     }
@@ -51,5 +55,13 @@ public class ArtistUpdateRequest {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public Set<Long> getGenreIds() {
+        return genreIds;
+    }
+
+    public void setGenreIds(Set<Long> genreIds) {
+        this.genreIds = genreIds;
     }
 }

@@ -3,26 +3,35 @@ package com.concerttracker.backend.service;
 import com.concerttracker.backend.dto.request.ArtistCreateRequest;
 import com.concerttracker.backend.dto.request.ArtistUpdateRequest;
 import com.concerttracker.backend.dto.response.ArtistResponse;
+import com.concerttracker.backend.dto.response.GenreResponse;
 import com.concerttracker.backend.entity.Artist;
+import com.concerttracker.backend.entity.Genre;
 import com.concerttracker.backend.exception.DuplicateResourceException;
 import com.concerttracker.backend.exception.InvalidOperationException;
 import com.concerttracker.backend.exception.ResourceNotFoundException;
 import com.concerttracker.backend.repository.ArtistRepository;
 import com.concerttracker.backend.repository.ConcertRepository;
+import com.concerttracker.backend.repository.GenreRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ArtistServiceImpl implements ArtistService {
 
     private final ArtistRepository artistRepository;
     private final ConcertRepository concertRepository;
+    private final GenreRepository genreRepository;
 
-    public ArtistServiceImpl(ArtistRepository artistRepository, ConcertRepository concertRepository) {
+    public ArtistServiceImpl(ArtistRepository artistRepository, ConcertRepository concertRepository,
+                             GenreRepository genreRepository) {
         this.artistRepository = artistRepository;
         this.concertRepository = concertRepository;
+        this.genreRepository = genreRepository;
     }
 
     @Override
@@ -33,6 +42,7 @@ public class ArtistServiceImpl implements ArtistService {
         }
         Artist artist = new Artist(request.getName(), request.getCountry(),
                 request.getDescription(), request.getImageUrl());
+        artist.setGenres(resolveGenres(request.getGenreIds()));
         return toResponse(artistRepository.save(artist));
     }
 
@@ -59,6 +69,7 @@ public class ArtistServiceImpl implements ArtistService {
         artist.setCountry(request.getCountry());
         artist.setDescription(request.getDescription());
         artist.setImageUrl(request.getImageUrl());
+        artist.setGenres(resolveGenres(request.getGenreIds()));
         return toResponse(artistRepository.save(artist));
     }
 
@@ -78,8 +89,23 @@ public class ArtistServiceImpl implements ArtistService {
                 .orElseThrow(() -> new ResourceNotFoundException("Artista no encontrado con id: " + id));
     }
 
+    private Set<Genre> resolveGenres(Set<Long> genreIds) {
+        if (genreIds == null || genreIds.isEmpty()) {
+            return new HashSet<>();
+        }
+        List<Genre> found = genreRepository.findAllById(genreIds);
+        if (found.size() != genreIds.size()) {
+            throw new ResourceNotFoundException("Uno o más géneros no existen: " + genreIds);
+        }
+        return new HashSet<>(found);
+    }
+
     private ArtistResponse toResponse(Artist artist) {
+        List<GenreResponse> genres = artist.getGenres().stream()
+                .sorted(Comparator.comparing(genre -> genre.getName().toLowerCase()))
+                .map(genre -> new GenreResponse(genre.getId(), genre.getName()))
+                .toList();
         return new ArtistResponse(artist.getId(), artist.getName(), artist.getCountry(),
-                artist.getDescription(), artist.getImageUrl());
+                artist.getDescription(), artist.getImageUrl(), genres);
     }
 }

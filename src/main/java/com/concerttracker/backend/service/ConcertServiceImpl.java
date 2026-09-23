@@ -5,6 +5,7 @@ import com.concerttracker.backend.dto.request.ConcertUpdateRequest;
 import com.concerttracker.backend.dto.response.ArtistResponse;
 import com.concerttracker.backend.dto.response.ConcertDetailResponse;
 import com.concerttracker.backend.dto.response.ConcertResponse;
+import com.concerttracker.backend.dto.response.GenreResponse;
 import com.concerttracker.backend.dto.response.VenueResponse;
 import com.concerttracker.backend.entity.Artist;
 import com.concerttracker.backend.entity.Concert;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -157,8 +159,15 @@ public class ConcertServiceImpl implements ConcertService {
         return new ConcertDetailResponse(concert.getId(), concert.getTitle(), concert.getDate(),
                 concert.getTicketPrice(), concert.getImageUrl(),
                 new ArtistResponse(artist.getId(), artist.getName(), artist.getCountry(),
-                        artist.getDescription(), artist.getImageUrl()),
+                        artist.getDescription(), artist.getImageUrl(), toGenreResponses(artist)),
                 new VenueResponse(venue.getId(), venue.getName(), venue.getCity(), venue.getCountry(),
                         venue.getAddress(), venue.getCapacity()));
+    }
+
+    private List<GenreResponse> toGenreResponses(Artist artist) {
+        return artist.getGenres().stream()
+                .sorted(Comparator.comparing(genre -> genre.getName().toLowerCase()))
+                .map(genre -> new GenreResponse(genre.getId(), genre.getName()))
+                .toList();
     }
 }
