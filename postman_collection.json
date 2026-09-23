@@ -1,7 +1,7 @@
 ﻿{
   "info": {
     "name": "Concert Tracker - Backend",
-    "description": "Coleccion completa de la API: Auth y Genres (Persona 1), Descubrimiento - Venue/Artist/Concert (Persona 2), Interacciones de usuario - Attendance/Review/Follow (Persona 3). Variables de coleccion: base_url, token (se llena solo con Login/Register), refresh_token. La carpeta de Descubrimiento define su propio base_url de carpeta (con /api/v1) porque asi estaban armadas sus requests originales; el resto usa el base_url de la coleccion.",
+    "description": "Coleccion completa de la API: Auth y Genres (Persona 1), Descubrimiento - Venue/Artist/Concert (Persona 2), Interacciones de usuario - Attendance/Review/Follow (Persona 3). Variables de coleccion: base_url, token (se llena solo con Login/Register), refresh_token, admin_email, admin_password.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -302,7 +302,6 @@
 {
   "name": "Descubrimiento (Persona 2 - Artist, Concert, Venue)",
   "description": "Endpoints de Persona 2: Venue, Artist y Concert. Los GET son públicos; POST, PUT y DELETE requieren token de ADMIN (Bearer {{token}}). Ids de ejemplo: venues 2-4, artistas 2-5, conciertos 3-5.",
-  "variable": [ { "key": "base_url", "value": "http://localhost:8080/api/v1", "type": "string" } ],
   "auth": {
     "type": "bearer",
     "bearer": [
@@ -328,11 +327,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/auth/login",
+              "raw": "{{base_url}}/api/v1/auth/login",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "auth",
                 "login"
               ]
@@ -363,11 +364,13 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/auth/login",
+                  "raw": "{{base_url}}/api/v1/auth/login",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "auth",
                     "login"
                   ]
@@ -418,11 +421,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/venues",
+              "raw": "{{base_url}}/api/v1/venues",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "venues"
               ]
             },
@@ -438,11 +443,13 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/venues",
+                  "raw": "{{base_url}}/api/v1/venues",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "venues"
                   ]
                 }
@@ -467,11 +474,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/venues/2",
+              "raw": "{{base_url}}/api/v1/venues/2",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "venues",
                 "2"
               ]
@@ -488,11 +497,13 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/venues/2",
+                  "raw": "{{base_url}}/api/v1/venues/2",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "venues",
                     "2"
                   ]
@@ -518,11 +529,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/venues/2/concerts",
+              "raw": "{{base_url}}/api/v1/venues/2/concerts",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "venues",
                 "2",
                 "concerts"
@@ -540,11 +553,13 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/venues/2/concerts",
+                  "raw": "{{base_url}}/api/v1/venues/2/concerts",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "venues",
                     "2",
                     "concerts"
@@ -576,11 +591,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/venues",
+              "raw": "{{base_url}}/api/v1/venues",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "venues"
               ]
             },
@@ -607,11 +624,13 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/venues",
+                  "raw": "{{base_url}}/api/v1/venues",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "venues"
                   ]
                 },
@@ -650,11 +669,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/venues/2",
+              "raw": "{{base_url}}/api/v1/venues/2",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "venues",
                 "2"
               ]
@@ -682,11 +703,13 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/venues/2",
+                  "raw": "{{base_url}}/api/v1/venues/2",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "venues",
                     "2"
                   ]
@@ -721,11 +744,13 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/venues/999",
+              "raw": "{{base_url}}/api/v1/venues/999",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "venues",
                 "999"
               ]
@@ -739,11 +764,13 @@
                 "method": "DELETE",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/venues/5",
+                  "raw": "{{base_url}}/api/v1/venues/5",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "venues",
                     "5"
                   ]
@@ -769,11 +796,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/artists",
+              "raw": "{{base_url}}/api/v1/artists",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "artists"
               ]
             },
@@ -789,11 +818,13 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/artists",
+                  "raw": "{{base_url}}/api/v1/artists",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "artists"
                   ]
                 }
@@ -818,11 +849,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/artists/2",
+              "raw": "{{base_url}}/api/v1/artists/2",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "artists",
                 "2"
               ]
@@ -839,11 +872,13 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/artists/2",
+                  "raw": "{{base_url}}/api/v1/artists/2",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "artists",
                     "2"
                   ]
@@ -869,11 +904,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/artists/2/concerts",
+              "raw": "{{base_url}}/api/v1/artists/2/concerts",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "artists",
                 "2",
                 "concerts"
@@ -891,11 +928,13 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/artists/2/concerts",
+                  "raw": "{{base_url}}/api/v1/artists/2/concerts",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "artists",
                     "2",
                     "concerts"
@@ -927,11 +966,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/artists",
+              "raw": "{{base_url}}/api/v1/artists",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "artists"
               ]
             },
@@ -958,11 +999,13 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/artists",
+                  "raw": "{{base_url}}/api/v1/artists",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "artists"
                   ]
                 },
@@ -1001,11 +1044,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/artists/2",
+              "raw": "{{base_url}}/api/v1/artists/2",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "artists",
                 "2"
               ]
@@ -1033,11 +1078,13 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/artists/2",
+                  "raw": "{{base_url}}/api/v1/artists/2",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "artists",
                     "2"
                   ]
@@ -1072,11 +1119,13 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/artists/999",
+              "raw": "{{base_url}}/api/v1/artists/999",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "artists",
                 "999"
               ]
@@ -1090,11 +1139,13 @@
                 "method": "DELETE",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/artists/6",
+                  "raw": "{{base_url}}/api/v1/artists/6",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "artists",
                     "6"
                   ]
@@ -1120,11 +1171,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/concerts",
+              "raw": "{{base_url}}/api/v1/concerts",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "concerts"
               ]
             },
@@ -1140,11 +1193,13 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/concerts",
+                  "raw": "{{base_url}}/api/v1/concerts",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "concerts"
                   ]
                 }
@@ -1169,11 +1224,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/concerts/3",
+              "raw": "{{base_url}}/api/v1/concerts/3",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "concerts",
                 "3"
               ]
@@ -1190,11 +1247,13 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/concerts/3",
+                  "raw": "{{base_url}}/api/v1/concerts/3",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "concerts",
                     "3"
                   ]
@@ -1220,11 +1279,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/concerts/search?artist=bad&country=Perú&city=Lima&upcoming=true",
+              "raw": "{{base_url}}/api/v1/concerts/search?artist=bad&country=Perú&city=Lima&upcoming=true",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "concerts",
                 "search"
               ],
@@ -1259,11 +1320,13 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/concerts/search?artist=bad&country=Perú&city=Lima&upcoming=true",
+                  "raw": "{{base_url}}/api/v1/concerts/search?artist=bad&country=Perú&city=Lima&upcoming=true",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "concerts",
                     "search"
                   ],
@@ -1312,11 +1375,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/concerts",
+              "raw": "{{base_url}}/api/v1/concerts",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "concerts"
               ]
             },
@@ -1343,11 +1408,13 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/concerts",
+                  "raw": "{{base_url}}/api/v1/concerts",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "concerts"
                   ]
                 },
@@ -1386,11 +1453,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/concerts/3",
+              "raw": "{{base_url}}/api/v1/concerts/3",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "concerts",
                 "3"
               ]
@@ -1418,11 +1487,13 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/concerts/3",
+                  "raw": "{{base_url}}/api/v1/concerts/3",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "concerts",
                     "3"
                   ]
@@ -1457,11 +1528,13 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/concerts/999",
+              "raw": "{{base_url}}/api/v1/concerts/999",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "concerts",
                 "999"
               ]
@@ -1475,11 +1548,13 @@
                 "method": "DELETE",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/concerts/6",
+                  "raw": "{{base_url}}/api/v1/concerts/6",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "concerts",
                     "6"
                   ]
@@ -1505,11 +1580,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/venues/999",
+              "raw": "{{base_url}}/api/v1/venues/999",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "venues",
                 "999"
               ]
@@ -1526,11 +1603,13 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/venues/999",
+                  "raw": "{{base_url}}/api/v1/venues/999",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "venues",
                     "999"
                   ]
@@ -1561,11 +1640,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/venues",
+              "raw": "{{base_url}}/api/v1/venues",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "venues"
               ]
             },
@@ -1592,11 +1673,13 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/venues",
+                  "raw": "{{base_url}}/api/v1/venues",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "venues"
                   ]
                 },
@@ -1635,11 +1718,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/artists",
+              "raw": "{{base_url}}/api/v1/artists",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "artists"
               ]
             },
@@ -1666,11 +1751,13 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/artists",
+                  "raw": "{{base_url}}/api/v1/artists",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "artists"
                   ]
                 },
@@ -1704,11 +1791,13 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/venues/2",
+              "raw": "{{base_url}}/api/v1/venues/2",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "venues",
                 "2"
               ]
@@ -1722,11 +1811,13 @@
                 "method": "DELETE",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/venues/2",
+                  "raw": "{{base_url}}/api/v1/venues/2",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "venues",
                     "2"
                   ]
@@ -1752,11 +1843,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/concerts/search?date=hola",
+              "raw": "{{base_url}}/api/v1/concerts/search?date=hola",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "concerts",
                 "search"
               ],
@@ -1779,11 +1872,13 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/concerts/search?date=hola",
+                  "raw": "{{base_url}}/api/v1/concerts/search?date=hola",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "concerts",
                     "search"
                   ],
@@ -1820,11 +1915,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/venues",
+              "raw": "{{base_url}}/api/v1/venues",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "venues"
               ]
             },
@@ -1854,11 +1951,13 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/venues",
+                  "raw": "{{base_url}}/api/v1/venues",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "venues"
                   ]
                 },
@@ -1897,11 +1996,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/venues",
+              "raw": "{{base_url}}/api/v1/venues",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "venues"
               ]
             },
@@ -1928,11 +2029,13 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/venues",
+                  "raw": "{{base_url}}/api/v1/venues",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "api",
+                    "v1",
                     "venues"
                   ]
                 },
