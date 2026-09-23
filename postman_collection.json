@@ -1,0 +1,225 @@
+{
+  "info": {
+    "_postman_id": "b6f2a4b0-6e1a-4b3a-9b0a-concerttracker01",
+    "name": "Concert Tracker - Backend",
+    "description": "Coleccion de la API de Concert Tracker. Por ahora incluye Auth y Genres (Persona 1); las demas personas agregan sus carpetas (Artist/Concert/Venue, Attendance/Review/Follow) a este mismo archivo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.accessToken) { pm.collectionVariables.set('token', data.accessToken); }",
+                  "if (data.refreshToken) { pm.collectionVariables.set('refresh_token', data.refreshToken); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Usuario de Prueba\",\n  \"email\": \"usuario@example.com\",\n  \"password\": \"password123\",\n  \"country\": \"Peru\",\n  \"city\": \"Lima\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Crea una cuenta con rol USER por defecto. Devuelve accessToken, refreshToken y los datos del usuario."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.accessToken) { pm.collectionVariables.set('token', data.accessToken); }",
+                  "if (data.refreshToken) { pm.collectionVariables.set('refresh_token', data.refreshToken); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"usuario@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Valida credenciales y devuelve un par de tokens nuevo. El test de esta request guarda el accessToken en {{token}} automaticamente."
+          }
+        },
+        {
+          "name": "Refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.accessToken) { pm.collectionVariables.set('token', data.accessToken); }",
+                  "if (data.refreshToken) { pm.collectionVariables.set('refresh_token', data.refreshToken); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/refresh?refreshToken={{refresh_token}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "refresh"],
+              "query": [
+                { "key": "refreshToken", "value": "{{refresh_token}}" }
+              ]
+            },
+            "description": "Cambia un refresh token vigente por un access token nuevo (sin pedir contrasena). El refresh token se manda por query param, no en el body."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Genres",
+      "item": [
+        {
+          "name": "List Genres",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/genres",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "genres"]
+            },
+            "description": "Publico, no requiere token."
+          }
+        },
+        {
+          "name": "Get Genre by Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/genres/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "genres", "1"]
+            },
+            "description": "Publico, no requiere token."
+          }
+        },
+        {
+          "name": "Create Genre",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rock\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/genres",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "genres"]
+            },
+            "description": "Requiere token de un usuario con rol ADMIN. Nombre unico."
+          }
+        },
+        {
+          "name": "Update Genre",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rock Alternativo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/genres/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "genres", "1"]
+            },
+            "description": "Requiere token de un usuario con rol ADMIN."
+          }
+        },
+        {
+          "name": "Delete Genre",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/genres/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "genres", "1"]
+            },
+            "description": "Requiere token de un usuario con rol ADMIN."
+          }
+        }
+      ]
+    }
+  ]
+}
