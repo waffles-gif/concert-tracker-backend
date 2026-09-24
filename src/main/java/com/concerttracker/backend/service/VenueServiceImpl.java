@@ -4,7 +4,7 @@ import com.concerttracker.backend.dto.request.VenueCreateRequest;
 import com.concerttracker.backend.dto.request.VenueUpdateRequest;
 import com.concerttracker.backend.dto.response.VenueResponse;
 import com.concerttracker.backend.entity.Venue;
-import com.concerttracker.backend.exception.InvalidOperationException;
+import com.concerttracker.backend.exception.ResourceInUseException;
 import com.concerttracker.backend.exception.ResourceNotFoundException;
 import com.concerttracker.backend.repository.ConcertRepository;
 import com.concerttracker.backend.repository.VenueRepository;
@@ -61,7 +61,7 @@ public class VenueServiceImpl implements VenueService {
     public void delete(Long id) {
         Venue venue = findEntityById(id);
         if (concertRepository.existsByVenueId(id)) {
-            throw new InvalidOperationException(
+            throw new ResourceInUseException(
                     "No se puede eliminar el venue con id " + id + " porque tiene conciertos asociados");
         }
         venueRepository.delete(venue);

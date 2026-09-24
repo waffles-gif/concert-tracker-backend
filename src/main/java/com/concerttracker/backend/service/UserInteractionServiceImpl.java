@@ -12,9 +12,11 @@ import com.concerttracker.backend.entity.Follow;
 import com.concerttracker.backend.entity.Review;
 import com.concerttracker.backend.event.AttendanceCreatedEvent;
 import com.concerttracker.backend.event.ReviewCreatedEvent;
+import com.concerttracker.backend.exception.AttendanceNotAllowedException;
 import com.concerttracker.backend.exception.DuplicateResourceException;
 import com.concerttracker.backend.exception.InvalidOperationException;
 import com.concerttracker.backend.exception.ResourceNotFoundException;
+import com.concerttracker.backend.exception.ReviewNotAllowedException;
 import com.concerttracker.backend.repository.ArtistRepository;
 import com.concerttracker.backend.repository.AttendanceRepository;
 import com.concerttracker.backend.repository.ConcertRepository;
@@ -61,7 +63,7 @@ public class UserInteractionServiceImpl implements UserInteractionService {
         // No tiene sentido decir "ya fui" a un concierto que todavía no ocurre
         if (dto.status() == Attendance.AttendanceStatus.YA_FUI
                 && concert.getDate().isAfter(LocalDateTime.now())) {
-            throw new InvalidOperationException(
+            throw new AttendanceNotAllowedException(
                     "No puedes marcar 'YA_FUI' en un concierto que aún no se realiza.");
         }
 
@@ -115,7 +117,7 @@ public class UserInteractionServiceImpl implements UserInteractionService {
                         "No puedes dejar una reseña sin haber registrado asistencia previa."));
 
         if (attendance.getStatus() != Attendance.AttendanceStatus.YA_FUI) {
-            throw new InvalidOperationException(
+            throw new ReviewNotAllowedException(
                     "Solo puedes dejar una reseña si el estado de tu asistencia es 'YA_FUI'.");
         }
 

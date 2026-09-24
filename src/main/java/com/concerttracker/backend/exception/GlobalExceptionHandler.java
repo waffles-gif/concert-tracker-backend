@@ -40,6 +40,23 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(ResourceInUseException.class)
+    public ResponseEntity<ErrorResponseDTO> handleResourceInUse(ResourceInUseException ex, HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(AttendanceNotAllowedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAttendanceNotAllowed(AttendanceNotAllowedException ex,
+                                                                        HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ReviewNotAllowedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleReviewNotAllowed(ReviewNotAllowedException ex,
+                                                                    HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(ForbiddenOperationException.class)
     public ResponseEntity<ErrorResponseDTO> handleForbiddenOperation(ForbiddenOperationException ex,
                                                                       HttpServletRequest request) {
