@@ -25,3 +25,6 @@ out/
 ### application.properties sensible ###
 application-local.properties
 .env
+
+### macOS ###
+.DS_Store

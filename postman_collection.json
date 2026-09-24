@@ -1,307 +1,9 @@
-﻿{
+{
   "info": {
     "name": "Concert Tracker - Backend",
     "description": "Coleccion completa de la API: Auth y Genres (Persona 1), Descubrimiento - Venue/Artist/Concert (Persona 2), Interacciones de usuario - Attendance/Review/Follow (Persona 3). Variables de coleccion: base_url, token (se llena solo con Login/Register), refresh_token, admin_email, admin_password.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "variable": [
-    { "key": "base_url", "value": "http://localhost:8080", "type": "string" },
-    { "key": "token", "value": "", "type": "string" },
-    { "key": "refresh_token", "value": "", "type": "string" },
-    { "key": "admin_email", "value": "admin.test@example.com", "type": "string" },
-    { "key": "admin_password", "value": "Admin12345", "type": "string" }
-  ],
-  "item": [
-{
-        "name":  "Auth",
-        "item":  [
-                     {
-                         "name":  "Register",
-                         "event":  [
-                                       {
-                                           "listen":  "test",
-                                           "script":  {
-                                                          "type":  "text/javascript",
-                                                          "exec":  [
-                                                                       "const data = pm.response.json();",
-                                                                       "if (data.accessToken) { pm.collectionVariables.set(\u0027token\u0027, data.accessToken); }",
-                                                                       "if (data.refreshToken) { pm.collectionVariables.set(\u0027refresh_token\u0027, data.refreshToken); }"
-                                                                   ]
-                                                      }
-                                       }
-                                   ],
-                         "request":  {
-                                         "method":  "POST",
-                                         "header":  [
-                                                        {
-                                                            "key":  "Content-Type",
-                                                            "value":  "application/json"
-                                                        }
-                                                    ],
-                                         "body":  {
-                                                      "mode":  "raw",
-                                                      "raw":  "{\n  \"name\": \"Usuario de Prueba\",\n  \"email\": \"usuario@example.com\",\n  \"password\": \"password123\",\n  \"country\": \"Peru\",\n  \"city\": \"Lima\"\n}"
-                                                  },
-                                         "url":  {
-                                                     "raw":  "{{base_url}}/api/v1/auth/register",
-                                                     "host":  [
-                                                                  "{{base_url}}"
-                                                              ],
-                                                     "path":  [
-                                                                  "api",
-                                                                  "v1",
-                                                                  "auth",
-                                                                  "register"
-                                                              ]
-                                                 },
-                                         "description":  "Crea una cuenta con rol USER por defecto. Devuelve accessToken, refreshToken y los datos del usuario."
-                                     }
-                     },
-                     {
-                         "name":  "Login",
-                         "event":  [
-                                       {
-                                           "listen":  "test",
-                                           "script":  {
-                                                          "type":  "text/javascript",
-                                                          "exec":  [
-                                                                       "const data = pm.response.json();",
-                                                                       "if (data.accessToken) { pm.collectionVariables.set(\u0027token\u0027, data.accessToken); }",
-                                                                       "if (data.refreshToken) { pm.collectionVariables.set(\u0027refresh_token\u0027, data.refreshToken); }"
-                                                                   ]
-                                                      }
-                                       }
-                                   ],
-                         "request":  {
-                                         "method":  "POST",
-                                         "header":  [
-                                                        {
-                                                            "key":  "Content-Type",
-                                                            "value":  "application/json"
-                                                        }
-                                                    ],
-                                         "body":  {
-                                                      "mode":  "raw",
-                                                      "raw":  "{\n  \"email\": \"usuario@example.com\",\n  \"password\": \"password123\"\n}"
-                                                  },
-                                         "url":  {
-                                                     "raw":  "{{base_url}}/api/v1/auth/login",
-                                                     "host":  [
-                                                                  "{{base_url}}"
-                                                              ],
-                                                     "path":  [
-                                                                  "api",
-                                                                  "v1",
-                                                                  "auth",
-                                                                  "login"
-                                                              ]
-                                                 },
-                                         "description":  "Valida credenciales y devuelve un par de tokens nuevo. El test de esta request guarda el accessToken en {{token}} automaticamente."
-                                     }
-                     },
-                     {
-                         "name":  "Refresh",
-                         "event":  [
-                                       {
-                                           "listen":  "test",
-                                           "script":  {
-                                                          "type":  "text/javascript",
-                                                          "exec":  [
-                                                                       "const data = pm.response.json();",
-                                                                       "if (data.accessToken) { pm.collectionVariables.set(\u0027token\u0027, data.accessToken); }",
-                                                                       "if (data.refreshToken) { pm.collectionVariables.set(\u0027refresh_token\u0027, data.refreshToken); }"
-                                                                   ]
-                                                      }
-                                       }
-                                   ],
-                         "request":  {
-                                         "method":  "POST",
-                                         "header":  [
-
-                                                    ],
-                                         "url":  {
-                                                     "raw":  "{{base_url}}/api/v1/auth/refresh?refreshToken={{refresh_token}}",
-                                                     "host":  [
-                                                                  "{{base_url}}"
-                                                              ],
-                                                     "path":  [
-                                                                  "api",
-                                                                  "v1",
-                                                                  "auth",
-                                                                  "refresh"
-                                                              ],
-                                                     "query":  [
-                                                                   {
-                                                                       "key":  "refreshToken",
-                                                                       "value":  "{{refresh_token}}"
-                                                                   }
-                                                               ]
-                                                 },
-                                         "description":  "Cambia un refresh token vigente por un access token nuevo (sin pedir contrasena). El refresh token se manda por query param, no en el body."
-                                     }
-                     }
-                 ]
-    },
-    {
-        "name":  "Genres",
-        "item":  [
-                     {
-                         "name":  "List Genres",
-                         "request":  {
-                                         "method":  "GET",
-                                         "header":  [
-
-                                                    ],
-                                         "url":  {
-                                                     "raw":  "{{base_url}}/api/v1/genres",
-                                                     "host":  [
-                                                                  "{{base_url}}"
-                                                              ],
-                                                     "path":  [
-                                                                  "api",
-                                                                  "v1",
-                                                                  "genres"
-                                                              ]
-                                                 },
-                                         "description":  "Publico, no requiere token."
-                                     }
-                     },
-                     {
-                         "name":  "Get Genre by Id",
-                         "request":  {
-                                         "method":  "GET",
-                                         "header":  [
-
-                                                    ],
-                                         "url":  {
-                                                     "raw":  "{{base_url}}/api/v1/genres/1",
-                                                     "host":  [
-                                                                  "{{base_url}}"
-                                                              ],
-                                                     "path":  [
-                                                                  "api",
-                                                                  "v1",
-                                                                  "genres",
-                                                                  "1"
-                                                              ]
-                                                 },
-                                         "description":  "Publico, no requiere token."
-                                     }
-                     },
-                     {
-                         "name":  "Create Genre",
-                         "request":  {
-                                         "method":  "POST",
-                                         "header":  [
-                                                        {
-                                                            "key":  "Content-Type",
-                                                            "value":  "application/json"
-                                                        }
-                                                    ],
-                                         "auth":  {
-                                                      "type":  "bearer",
-                                                      "bearer":  [
-                                                                     {
-                                                                         "key":  "token",
-                                                                         "value":  "{{token}}",
-                                                                         "type":  "string"
-                                                                     }
-                                                                 ]
-                                                  },
-                                         "body":  {
-                                                      "mode":  "raw",
-                                                      "raw":  "{\n  \"name\": \"Rock\"\n}"
-                                                  },
-                                         "url":  {
-                                                     "raw":  "{{base_url}}/api/v1/genres",
-                                                     "host":  [
-                                                                  "{{base_url}}"
-                                                              ],
-                                                     "path":  [
-                                                                  "api",
-                                                                  "v1",
-                                                                  "genres"
-                                                              ]
-                                                 },
-                                         "description":  "Requiere token de un usuario con rol ADMIN. Nombre unico."
-                                     }
-                     },
-                     {
-                         "name":  "Update Genre",
-                         "request":  {
-                                         "method":  "PUT",
-                                         "header":  [
-                                                        {
-                                                            "key":  "Content-Type",
-                                                            "value":  "application/json"
-                                                        }
-                                                    ],
-                                         "auth":  {
-                                                      "type":  "bearer",
-                                                      "bearer":  [
-                                                                     {
-                                                                         "key":  "token",
-                                                                         "value":  "{{token}}",
-                                                                         "type":  "string"
-                                                                     }
-                                                                 ]
-                                                  },
-                                         "body":  {
-                                                      "mode":  "raw",
-                                                      "raw":  "{\n  \"name\": \"Rock Alternativo\"\n}"
-                                                  },
-                                         "url":  {
-                                                     "raw":  "{{base_url}}/api/v1/genres/1",
-                                                     "host":  [
-                                                                  "{{base_url}}"
-                                                              ],
-                                                     "path":  [
-                                                                  "api",
-                                                                  "v1",
-                                                                  "genres",
-                                                                  "1"
-                                                              ]
-                                                 },
-                                         "description":  "Requiere token de un usuario con rol ADMIN."
-                                     }
-                     },
-                     {
-                         "name":  "Delete Genre",
-                         "request":  {
-                                         "method":  "DELETE",
-                                         "header":  [
-
-                                                    ],
-                                         "auth":  {
-                                                      "type":  "bearer",
-                                                      "bearer":  [
-                                                                     {
-                                                                         "key":  "token",
-                                                                         "value":  "{{token}}",
-                                                                         "type":  "string"
-                                                                     }
-                                                                 ]
-                                                  },
-                                         "url":  {
-                                                     "raw":  "{{base_url}}/api/v1/genres/1",
-                                                     "host":  [
-                                                                  "{{base_url}}"
-                                                              ],
-                                                     "path":  [
-                                                                  "api",
-                                                                  "v1",
-                                                                  "genres",
-                                                                  "1"
-                                                              ]
-                                                 },
-                                         "description":  "Requiere token de un usuario con rol ADMIN."
-                                     }
-                     }
-                 ]
-    },
-{
-  "name": "Descubrimiento (Persona 2 - Artist, Concert, Venue)",
-  "description": "Endpoints de Persona 2: Venue, Artist y Concert. Los GET son públicos; POST, PUT y DELETE requieren token de ADMIN (Bearer {{token}}). Ids de ejemplo: venues 2-4, artistas 2-5, conciertos 3-5.",
   "auth": {
     "type": "bearer",
     "bearer": [
@@ -312,12 +14,52 @@
       }
     ]
   },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_email",
+      "value": "admin.test@example.com",
+      "type": "string"
+    },
+    {
+      "key": "admin_password",
+      "value": "Admin12345",
+      "type": "string"
+    }
+  ],
   "item": [
     {
       "name": "Auth",
       "item": [
         {
-          "name": "Login (guarda el token)",
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.accessToken) { pm.collectionVariables.set('token', data.accessToken); }",
+                  "if (data.refreshToken) { pm.collectionVariables.set('refresh_token', data.refreshToken); }"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -326,6 +68,52 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Usuario de Prueba\",\n  \"email\": \"usuario@example.com\",\n  \"password\": \"password123\",\n  \"country\": \"Peru\",\n  \"city\": \"Lima\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Crea una cuenta con rol USER por defecto. Devuelve accessToken, refreshToken y los datos del usuario."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.accessToken) { pm.collectionVariables.set('token', data.accessToken); }",
+                  "if (data.refreshToken) { pm.collectionVariables.set('refresh_token', data.refreshToken); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"usuario@example.com\",\n  \"password\": \"password123\"\n}"
+            },
             "url": {
               "raw": "{{base_url}}/api/v1/auth/login",
               "host": [
@@ -338,24 +126,221 @@
                 "login"
               ]
             },
-            "description": "Público. Guarda accessToken en la variable de entorno token.",
+            "description": "Valida credenciales y devuelve un par de tokens nuevo. El test de esta request guarda el accessToken en {{token}} automaticamente."
+          }
+        },
+        {
+          "name": "Refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.accessToken) { pm.collectionVariables.set('token', data.accessToken); }",
+                  "if (data.refreshToken) { pm.collectionVariables.set('refresh_token', data.refreshToken); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/refresh?refreshToken={{refresh_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ],
+              "query": [
+                {
+                  "key": "refreshToken",
+                  "value": "{{refresh_token}}"
+                }
+              ]
+            },
+            "description": "Cambia un refresh token vigente por un access token nuevo (sin pedir contrasena). El refresh token se manda por query param, no en el body."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Genres",
+      "item": [
+        {
+          "name": "List Genres",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/genres",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "genres"
+              ]
+            },
+            "description": "Publico, no requiere token."
+          }
+        },
+        {
+          "name": "Get Genre by Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/genres/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "genres",
+                "1"
+              ]
+            },
+            "description": "Publico, no requiere token."
+          }
+        },
+        {
+          "name": "Create Genre",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"name\": \"Rock\"\n}"
             },
+            "url": {
+              "raw": "{{base_url}}/api/v1/genres",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "genres"
+              ]
+            },
+            "description": "Requiere token de un usuario con rol ADMIN. Nombre unico."
+          }
+        },
+        {
+          "name": "Update Genre",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "auth": {
-              "type": "noauth"
-            }
-          },
-          "response": [
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rock Alternativo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/genres/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "genres",
+                "1"
+              ]
+            },
+            "description": "Requiere token de un usuario con rol ADMIN."
+          }
+        },
+        {
+          "name": "Delete Genre",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/genres/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "genres",
+                "1"
+              ]
+            },
+            "description": "Requiere token de un usuario con rol ADMIN."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Descubrimiento (Persona 2 - Artist, Concert, Venue)",
+      "description": "Endpoints de Persona 2: Venue, Artist y Concert. Los GET son públicos; POST, PUT y DELETE requieren token de ADMIN (Bearer {{token}}). Ids de ejemplo: venues 2-4, artistas 2-5, conciertos 3-5.",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
             {
-              "name": "200 OK",
-              "originalRequest": {
+              "name": "Login (guarda el token)",
+              "request": {
                 "method": "POST",
                 "header": [
                   {
@@ -375,6 +360,7 @@
                     "login"
                   ]
                 },
+                "description": "Público. Guarda accessToken en la variable de entorno token.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}",
@@ -383,63 +369,77 @@
                       "language": "json"
                     }
                   }
+                },
+                "auth": {
+                  "type": "noauth"
                 }
               },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "200 OK",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/auth/login",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "auth",
+                        "login"
+                      ]
+                    },
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"accessToken\": \"<jwt>\",\n  \"refreshToken\": \"<jwt>\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Admin Test\",\n    \"email\": \"admin.test@example.com\",\n    \"role\": \"ADMIN\",\n    \"country\": \"CL\",\n    \"city\": \"Santiago\",\n    \"createdAt\": \"2026-09-20T13:42:13.127788\"\n  },\n  \"tokenType\": \"Bearer\"\n}"
                 }
               ],
-              "cookie": [],
-              "body": "{\n  \"accessToken\": \"<jwt>\",\n  \"refreshToken\": \"<jwt>\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Admin Test\",\n    \"email\": \"admin.test@example.com\",\n    \"role\": \"ADMIN\",\n    \"country\": \"CL\",\n    \"city\": \"Santiago\",\n    \"createdAt\": \"2026-09-20T13:42:13.127788\"\n  },\n  \"tokenType\": \"Bearer\"\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.environment.set(\"token\", pm.response.json().accessToken);"
-                ]
-              }
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.environment.set(\"token\", pm.response.json().accessToken);"
+                    ]
+                  }
+                }
+              ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "name": "Venues",
-      "item": [
+        },
         {
-          "name": "Listar venues",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/venues",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "venues"
-              ]
-            },
-            "description": "Público.",
-            "auth": {
-              "type": "noauth"
-            }
-          },
-          "response": [
+          "name": "Venues",
+          "item": [
             {
-              "name": "200 OK",
-              "originalRequest": {
+              "name": "Listar venues",
+              "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
@@ -452,48 +452,47 @@
                     "v1",
                     "venues"
                   ]
+                },
+                "description": "Público.",
+                "auth": {
+                  "type": "noauth"
                 }
               },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "200 OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/venues",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "venues"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "[\n  {\n    \"id\": 2,\n    \"name\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\",\n    \"address\": null,\n    \"capacity\": null\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Arena Perú\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\",\n    \"address\": null,\n    \"capacity\": null\n  },\n  {\n    \"id\": 4,\n    \"name\": \"Explanada Costa Verde\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\",\n    \"address\": null,\n    \"capacity\": null\n  }\n]"
                 }
-              ],
-              "cookie": [],
-              "body": "[\n  {\n    \"id\": 2,\n    \"name\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\",\n    \"address\": null,\n    \"capacity\": null\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Arena Perú\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\",\n    \"address\": null,\n    \"capacity\": null\n  },\n  {\n    \"id\": 4,\n    \"name\": \"Explanada Costa Verde\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\",\n    \"address\": null,\n    \"capacity\": null\n  }\n]"
-            }
-          ]
-        },
-        {
-          "name": "Ver venue",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/venues/2",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "venues",
-                "2"
               ]
             },
-            "description": "Público. 404 si no existe.",
-            "auth": {
-              "type": "noauth"
-            }
-          },
-          "response": [
             {
-              "name": "200 OK",
-              "originalRequest": {
+              "name": "Ver venue",
+              "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
@@ -507,49 +506,48 @@
                     "venues",
                     "2"
                   ]
+                },
+                "description": "Público. 404 si no existe.",
+                "auth": {
+                  "type": "noauth"
                 }
               },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "200 OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/venues/2",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "venues",
+                        "2"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": 2,\n  \"name\": \"Estadio Nacional\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\",\n  \"address\": null,\n  \"capacity\": null\n}"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"id\": 2,\n  \"name\": \"Estadio Nacional\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\",\n  \"address\": null,\n  \"capacity\": null\n}"
-            }
-          ]
-        },
-        {
-          "name": "Conciertos de un venue",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/venues/2/concerts",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "venues",
-                "2",
-                "concerts"
               ]
             },
-            "description": "Público. Ordenados por fecha.",
-            "auth": {
-              "type": "noauth"
-            }
-          },
-          "response": [
             {
-              "name": "200 OK",
-              "originalRequest": {
+              "name": "Conciertos de un venue",
+              "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
@@ -564,58 +562,49 @@
                     "2",
                     "concerts"
                   ]
+                },
+                "description": "Público. Ordenados por fecha.",
+                "auth": {
+                  "type": "noauth"
                 }
               },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "200 OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/venues/2/concerts",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "venues",
+                        "2",
+                        "concerts"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "[\n  {\n    \"id\": 3,\n    \"title\": \"Bad Bunny en Lima\",\n    \"date\": \"2026-10-12T20:00:00\",\n    \"ticketPrice\": 180.0,\n    \"imageUrl\": null,\n    \"artistId\": 2,\n    \"artistName\": \"Bad Bunny\",\n    \"venueId\": 2,\n    \"venueName\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\"\n  }\n]"
                 }
-              ],
-              "cookie": [],
-              "body": "[\n  {\n    \"id\": 3,\n    \"title\": \"Bad Bunny en Lima\",\n    \"date\": \"2026-10-12T20:00:00\",\n    \"ticketPrice\": 180.0,\n    \"imageUrl\": null,\n    \"artistId\": 2,\n    \"artistName\": \"Bad Bunny\",\n    \"venueId\": 2,\n    \"venueName\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\"\n  }\n]"
-            }
-          ]
-        },
-        {
-          "name": "Crear venue",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/venues",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "venues"
               ]
             },
-            "description": "Devuelve 201. name, city y country son obligatorios. Requiere rol ADMIN.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Nuevo Venue\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [
             {
-              "name": "201 Created",
-              "originalRequest": {
+              "name": "Crear venue",
+              "request": {
                 "method": "POST",
                 "header": [
                   {
@@ -634,6 +623,7 @@
                     "venues"
                   ]
                 },
+                "description": "Devuelve 201. name, city y country son obligatorios. Requiere rol ADMIN.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Nuevo Venue\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\"\n}",
@@ -644,57 +634,55 @@
                   }
                 }
               },
-              "status": "Created",
-              "code": 201,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "201 Created",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/venues",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "venues"
+                      ]
+                    },
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Nuevo Venue\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "Created",
+                  "code": 201,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": 5,\n  \"name\": \"Nuevo Venue\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\",\n  \"address\": null,\n  \"capacity\": null\n}"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"id\": 5,\n  \"name\": \"Nuevo Venue\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\",\n  \"address\": null,\n  \"capacity\": null\n}"
-            }
-          ]
-        },
-        {
-          "name": "Actualizar venue",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/venues/2",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "venues",
-                "2"
               ]
             },
-            "description": " Requiere rol ADMIN.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Estadio Nacional\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [
             {
-              "name": "200 OK",
-              "originalRequest": {
+              "name": "Actualizar venue",
+              "request": {
                 "method": "PUT",
                 "header": [
                   {
@@ -714,6 +702,7 @@
                     "2"
                   ]
                 },
+                "description": " Requiere rol ADMIN.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Estadio Nacional\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\"\n}",
@@ -724,47 +713,60 @@
                   }
                 }
               },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "200 OK",
+                  "originalRequest": {
+                    "method": "PUT",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/venues/2",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "venues",
+                        "2"
+                      ]
+                    },
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Estadio Nacional\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": 2,\n  \"name\": \"Estadio Nacional\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\",\n  \"address\": null,\n  \"capacity\": null\n}"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"id\": 2,\n  \"name\": \"Estadio Nacional\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\",\n  \"address\": null,\n  \"capacity\": null\n}"
-            }
-          ]
-        },
-        {
-          "name": "Eliminar venue",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/venues/999",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "venues",
-                "999"
               ]
             },
-            "description": "Devuelve 204. No permite borrar si tiene conciertos (409). En la peticion de ejemplo se uso un registro temporal recien creado; cambia el id por uno tuyo. Requiere rol ADMIN."
-          },
-          "response": [
             {
-              "name": "204 No Content",
-              "originalRequest": {
+              "name": "Eliminar venue",
+              "request": {
                 "method": "DELETE",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/api/v1/venues/5",
+                  "raw": "{{base_url}}/api/v1/venues/999",
                   "host": [
                     "{{base_url}}"
                   ],
@@ -772,49 +774,47 @@
                     "api",
                     "v1",
                     "venues",
-                    "5"
+                    "999"
                   ]
-                }
+                },
+                "description": "Devuelve 204. No permite borrar si tiene conciertos (409). En la peticion de ejemplo se uso un registro temporal recien creado; cambia el id por uno tuyo. Requiere rol ADMIN."
               },
-              "status": "No Content",
-              "code": 204,
-              "_postman_previewlanguage": "text",
-              "header": [],
-              "cookie": [],
-              "body": ""
+              "response": [
+                {
+                  "name": "204 No Content",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/venues/5",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "venues",
+                        "5"
+                      ]
+                    }
+                  },
+                  "status": "No Content",
+                  "code": 204,
+                  "_postman_previewlanguage": "text",
+                  "header": [],
+                  "cookie": [],
+                  "body": ""
+                }
+              ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "name": "Artists",
-      "item": [
+        },
         {
-          "name": "Listar artistas",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/artists",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "artists"
-              ]
-            },
-            "description": "Público.",
-            "auth": {
-              "type": "noauth"
-            }
-          },
-          "response": [
+          "name": "Artists",
+          "item": [
             {
-              "name": "200 OK",
-              "originalRequest": {
+              "name": "Listar artistas",
+              "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
@@ -827,48 +827,47 @@
                     "v1",
                     "artists"
                   ]
+                },
+                "description": "Público.",
+                "auth": {
+                  "type": "noauth"
                 }
               },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "200 OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/artists",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "artists"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "[\n  {\n    \"id\": 2,\n    \"name\": \"Bad Bunny\",\n    \"country\": \"Puerto Rico\",\n    \"description\": null,\n    \"imageUrl\": null\n  },\n  {\n    \"id\": 3,\n    \"name\": \"The Strokes\",\n    \"country\": \"Estados Unidos\",\n    \"description\": null,\n    \"imageUrl\": null\n  },\n  {\n    \"id\": 4,\n    \"name\": \"Karol G\",\n    \"country\": \"Colombia\",\n    \"description\": null,\n    \"imageUrl\": null\n  },\n  {\n    \"id\": 5,\n    \"name\": \"Bizarrap\",\n    \"country\": \"Argentina\",\n    \"description\": null,\n    \"imageUrl\": null\n  }\n]"
                 }
-              ],
-              "cookie": [],
-              "body": "[\n  {\n    \"id\": 2,\n    \"name\": \"Bad Bunny\",\n    \"country\": \"Puerto Rico\",\n    \"description\": null,\n    \"imageUrl\": null\n  },\n  {\n    \"id\": 3,\n    \"name\": \"The Strokes\",\n    \"country\": \"Estados Unidos\",\n    \"description\": null,\n    \"imageUrl\": null\n  },\n  {\n    \"id\": 4,\n    \"name\": \"Karol G\",\n    \"country\": \"Colombia\",\n    \"description\": null,\n    \"imageUrl\": null\n  },\n  {\n    \"id\": 5,\n    \"name\": \"Bizarrap\",\n    \"country\": \"Argentina\",\n    \"description\": null,\n    \"imageUrl\": null\n  }\n]"
-            }
-          ]
-        },
-        {
-          "name": "Ver artista",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/artists/2",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "artists",
-                "2"
               ]
             },
-            "description": "Público.",
-            "auth": {
-              "type": "noauth"
-            }
-          },
-          "response": [
             {
-              "name": "200 OK",
-              "originalRequest": {
+              "name": "Ver artista",
+              "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
@@ -882,49 +881,48 @@
                     "artists",
                     "2"
                   ]
+                },
+                "description": "Público.",
+                "auth": {
+                  "type": "noauth"
                 }
               },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "200 OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/artists/2",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "artists",
+                        "2"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": 2,\n  \"name\": \"Bad Bunny\",\n  \"country\": \"Puerto Rico\",\n  \"description\": null,\n  \"imageUrl\": null\n}"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"id\": 2,\n  \"name\": \"Bad Bunny\",\n  \"country\": \"Puerto Rico\",\n  \"description\": null,\n  \"imageUrl\": null\n}"
-            }
-          ]
-        },
-        {
-          "name": "Otros conciertos de este artista",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/artists/2/concerts",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "artists",
-                "2",
-                "concerts"
               ]
             },
-            "description": "Público. Ordenados por fecha.",
-            "auth": {
-              "type": "noauth"
-            }
-          },
-          "response": [
             {
-              "name": "200 OK",
-              "originalRequest": {
+              "name": "Otros conciertos de este artista",
+              "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
@@ -939,58 +937,49 @@
                     "2",
                     "concerts"
                   ]
+                },
+                "description": "Público. Ordenados por fecha.",
+                "auth": {
+                  "type": "noauth"
                 }
               },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "200 OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/artists/2/concerts",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "artists",
+                        "2",
+                        "concerts"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "[\n  {\n    \"id\": 3,\n    \"title\": \"Bad Bunny en Lima\",\n    \"date\": \"2026-10-12T20:00:00\",\n    \"ticketPrice\": 180.0,\n    \"imageUrl\": null,\n    \"artistId\": 2,\n    \"artistName\": \"Bad Bunny\",\n    \"venueId\": 2,\n    \"venueName\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\"\n  }\n]"
                 }
-              ],
-              "cookie": [],
-              "body": "[\n  {\n    \"id\": 3,\n    \"title\": \"Bad Bunny en Lima\",\n    \"date\": \"2026-10-12T20:00:00\",\n    \"ticketPrice\": 180.0,\n    \"imageUrl\": null,\n    \"artistId\": 2,\n    \"artistName\": \"Bad Bunny\",\n    \"venueId\": 2,\n    \"venueName\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\"\n  }\n]"
-            }
-          ]
-        },
-        {
-          "name": "Crear artista",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/artists",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "artists"
               ]
             },
-            "description": "Devuelve 201. Nombre único. Requiere rol ADMIN.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Artista Nuevo\",\n  \"country\": \"Perú\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [
             {
-              "name": "201 Created",
-              "originalRequest": {
+              "name": "Crear artista",
+              "request": {
                 "method": "POST",
                 "header": [
                   {
@@ -1009,6 +998,7 @@
                     "artists"
                   ]
                 },
+                "description": "Devuelve 201. Nombre único. Requiere rol ADMIN.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Artista Nuevo\",\n  \"country\": \"Perú\"\n}",
@@ -1019,57 +1009,55 @@
                   }
                 }
               },
-              "status": "Created",
-              "code": 201,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "201 Created",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/artists",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "artists"
+                      ]
+                    },
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Artista Nuevo\",\n  \"country\": \"Perú\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "Created",
+                  "code": 201,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": 6,\n  \"name\": \"Artista Nuevo\",\n  \"country\": \"Perú\",\n  \"description\": null,\n  \"imageUrl\": null\n}"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"id\": 6,\n  \"name\": \"Artista Nuevo\",\n  \"country\": \"Perú\",\n  \"description\": null,\n  \"imageUrl\": null\n}"
-            }
-          ]
-        },
-        {
-          "name": "Actualizar artista",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/artists/2",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "artists",
-                "2"
               ]
             },
-            "description": " Requiere rol ADMIN.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Bad Bunny\",\n  \"country\": \"Puerto Rico\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [
             {
-              "name": "200 OK",
-              "originalRequest": {
+              "name": "Actualizar artista",
+              "request": {
                 "method": "PUT",
                 "header": [
                   {
@@ -1089,6 +1077,7 @@
                     "2"
                   ]
                 },
+                "description": " Requiere rol ADMIN.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Bad Bunny\",\n  \"country\": \"Puerto Rico\"\n}",
@@ -1099,47 +1088,60 @@
                   }
                 }
               },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "200 OK",
+                  "originalRequest": {
+                    "method": "PUT",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/artists/2",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "artists",
+                        "2"
+                      ]
+                    },
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Bad Bunny\",\n  \"country\": \"Puerto Rico\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": 2,\n  \"name\": \"Bad Bunny\",\n  \"country\": \"Puerto Rico\",\n  \"description\": null,\n  \"imageUrl\": null\n}"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"id\": 2,\n  \"name\": \"Bad Bunny\",\n  \"country\": \"Puerto Rico\",\n  \"description\": null,\n  \"imageUrl\": null\n}"
-            }
-          ]
-        },
-        {
-          "name": "Eliminar artista",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/artists/999",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "artists",
-                "999"
               ]
             },
-            "description": "Devuelve 204. No permite borrar si tiene conciertos (409). En la peticion de ejemplo se uso un registro temporal recien creado; cambia el id por uno tuyo. Requiere rol ADMIN."
-          },
-          "response": [
             {
-              "name": "204 No Content",
-              "originalRequest": {
+              "name": "Eliminar artista",
+              "request": {
                 "method": "DELETE",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/api/v1/artists/6",
+                  "raw": "{{base_url}}/api/v1/artists/999",
                   "host": [
                     "{{base_url}}"
                   ],
@@ -1147,49 +1149,47 @@
                     "api",
                     "v1",
                     "artists",
-                    "6"
+                    "999"
                   ]
-                }
+                },
+                "description": "Devuelve 204. No permite borrar si tiene conciertos (409). En la peticion de ejemplo se uso un registro temporal recien creado; cambia el id por uno tuyo. Requiere rol ADMIN."
               },
-              "status": "No Content",
-              "code": 204,
-              "_postman_previewlanguage": "text",
-              "header": [],
-              "cookie": [],
-              "body": ""
+              "response": [
+                {
+                  "name": "204 No Content",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/artists/6",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "artists",
+                        "6"
+                      ]
+                    }
+                  },
+                  "status": "No Content",
+                  "code": 204,
+                  "_postman_previewlanguage": "text",
+                  "header": [],
+                  "cookie": [],
+                  "body": ""
+                }
+              ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "name": "Concerts",
-      "item": [
+        },
         {
-          "name": "Listar conciertos",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/concerts",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "concerts"
-              ]
-            },
-            "description": "Público. Ordenados por fecha.",
-            "auth": {
-              "type": "noauth"
-            }
-          },
-          "response": [
+          "name": "Concerts",
+          "item": [
             {
-              "name": "200 OK",
-              "originalRequest": {
+              "name": "Listar conciertos",
+              "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
@@ -1202,48 +1202,47 @@
                     "v1",
                     "concerts"
                   ]
+                },
+                "description": "Público. Ordenados por fecha.",
+                "auth": {
+                  "type": "noauth"
                 }
               },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "200 OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/concerts",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "concerts"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "[\n  {\n    \"id\": 3,\n    \"title\": \"Bad Bunny en Lima\",\n    \"date\": \"2026-10-12T20:00:00\",\n    \"ticketPrice\": 180.0,\n    \"imageUrl\": null,\n    \"artistId\": 2,\n    \"artistName\": \"Bad Bunny\",\n    \"venueId\": 2,\n    \"venueName\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\"\n  },\n  {\n    \"id\": 4,\n    \"title\": \"The Strokes en Lima\",\n    \"date\": \"2026-11-15T20:00:00\",\n    \"ticketPrice\": 220.0,\n    \"imageUrl\": null,\n    \"artistId\": 3,\n    \"artistName\": \"The Strokes\",\n    \"venueId\": 3,\n    \"venueName\": \"Arena Perú\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\"\n  },\n  {\n    \"id\": 5,\n    \"title\": \"Karol G en Lima\",\n    \"date\": \"2026-12-03T20:00:00\",\n    \"ticketPrice\": 250.0,\n    \"imageUrl\": null,\n    \"artistId\": 4,\n    \"artistName\": \"Karol G\",\n    \"venueId\": 4,\n    \"venueName\": \"Explanada Costa Verde\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\"\n  }\n]"
                 }
-              ],
-              "cookie": [],
-              "body": "[\n  {\n    \"id\": 3,\n    \"title\": \"Bad Bunny en Lima\",\n    \"date\": \"2026-10-12T20:00:00\",\n    \"ticketPrice\": 180.0,\n    \"imageUrl\": null,\n    \"artistId\": 2,\n    \"artistName\": \"Bad Bunny\",\n    \"venueId\": 2,\n    \"venueName\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\"\n  },\n  {\n    \"id\": 4,\n    \"title\": \"The Strokes en Lima\",\n    \"date\": \"2026-11-15T20:00:00\",\n    \"ticketPrice\": 220.0,\n    \"imageUrl\": null,\n    \"artistId\": 3,\n    \"artistName\": \"The Strokes\",\n    \"venueId\": 3,\n    \"venueName\": \"Arena Perú\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\"\n  },\n  {\n    \"id\": 5,\n    \"title\": \"Karol G en Lima\",\n    \"date\": \"2026-12-03T20:00:00\",\n    \"ticketPrice\": 250.0,\n    \"imageUrl\": null,\n    \"artistId\": 4,\n    \"artistName\": \"Karol G\",\n    \"venueId\": 4,\n    \"venueName\": \"Explanada Costa Verde\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\"\n  }\n]"
-            }
-          ]
-        },
-        {
-          "name": "Ver detalle de concierto",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/concerts/3",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "concerts",
-                "3"
               ]
             },
-            "description": "Público. Incluye artista y venue embebidos.",
-            "auth": {
-              "type": "noauth"
-            }
-          },
-          "response": [
             {
-              "name": "200 OK",
-              "originalRequest": {
+              "name": "Ver detalle de concierto",
+              "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
@@ -1257,66 +1256,48 @@
                     "concerts",
                     "3"
                   ]
+                },
+                "description": "Público. Incluye artista y venue embebidos.",
+                "auth": {
+                  "type": "noauth"
                 }
               },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"id\": 3,\n  \"title\": \"Bad Bunny en Lima\",\n  \"date\": \"2026-10-12T20:00:00\",\n  \"ticketPrice\": 180.0,\n  \"imageUrl\": null,\n  \"artist\": {\n    \"id\": 2,\n    \"name\": \"Bad Bunny\",\n    \"country\": \"Puerto Rico\",\n    \"description\": null,\n    \"imageUrl\": null\n  },\n  \"venue\": {\n    \"id\": 2,\n    \"name\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\",\n    \"address\": null,\n    \"capacity\": null\n  }\n}"
-            }
-          ]
-        },
-        {
-          "name": "Buscar conciertos",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/concerts/search?artist=bad&country=Perú&city=Lima&upcoming=true",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "concerts",
-                "search"
-              ],
-              "query": [
-                {
-                  "key": "artist",
-                  "value": "bad"
-                },
-                {
-                  "key": "country",
-                  "value": "Perú"
-                },
-                {
-                  "key": "city",
-                  "value": "Lima"
-                },
-                {
-                  "key": "upcoming",
-                  "value": "true"
+                  "name": "200 OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/concerts/3",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "concerts",
+                        "3"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": 3,\n  \"title\": \"Bad Bunny en Lima\",\n  \"date\": \"2026-10-12T20:00:00\",\n  \"ticketPrice\": 180.0,\n  \"imageUrl\": null,\n  \"artist\": {\n    \"id\": 2,\n    \"name\": \"Bad Bunny\",\n    \"country\": \"Puerto Rico\",\n    \"description\": null,\n    \"imageUrl\": null\n  },\n  \"venue\": {\n    \"id\": 2,\n    \"name\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\",\n    \"address\": null,\n    \"capacity\": null\n  }\n}"
                 }
               ]
             },
-            "description": "Público. Filtros opcionales: artist, country, city, date (yyyy-MM-dd), upcoming (true/false).",
-            "auth": {
-              "type": "noauth"
-            }
-          },
-          "response": [
             {
-              "name": "200 OK",
-              "originalRequest": {
+              "name": "Buscar conciertos",
+              "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
@@ -1348,58 +1329,66 @@
                       "value": "true"
                     }
                   ]
+                },
+                "description": "Público. Filtros opcionales: artist, country, city, date (yyyy-MM-dd), upcoming (true/false).",
+                "auth": {
+                  "type": "noauth"
                 }
               },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "200 OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/concerts/search?artist=bad&country=Perú&city=Lima&upcoming=true",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "concerts",
+                        "search"
+                      ],
+                      "query": [
+                        {
+                          "key": "artist",
+                          "value": "bad"
+                        },
+                        {
+                          "key": "country",
+                          "value": "Perú"
+                        },
+                        {
+                          "key": "city",
+                          "value": "Lima"
+                        },
+                        {
+                          "key": "upcoming",
+                          "value": "true"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "[\n  {\n    \"id\": 3,\n    \"title\": \"Bad Bunny en Lima\",\n    \"date\": \"2026-10-12T20:00:00\",\n    \"ticketPrice\": 180.0,\n    \"imageUrl\": null,\n    \"artistId\": 2,\n    \"artistName\": \"Bad Bunny\",\n    \"venueId\": 2,\n    \"venueName\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\"\n  }\n]"
                 }
-              ],
-              "cookie": [],
-              "body": "[\n  {\n    \"id\": 3,\n    \"title\": \"Bad Bunny en Lima\",\n    \"date\": \"2026-10-12T20:00:00\",\n    \"ticketPrice\": 180.0,\n    \"imageUrl\": null,\n    \"artistId\": 2,\n    \"artistName\": \"Bad Bunny\",\n    \"venueId\": 2,\n    \"venueName\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\"\n  }\n]"
-            }
-          ]
-        },
-        {
-          "name": "Crear concierto",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/concerts",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "concerts"
               ]
             },
-            "description": "Devuelve 201. Publica el evento ConcertCreatedEvent. Requiere rol ADMIN.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Concierto Nuevo\",\n  \"date\": \"2027-01-20T20:00:00\",\n  \"ticketPrice\": 100,\n  \"artistId\": 2,\n  \"venueId\": 2\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [
             {
-              "name": "201 Created",
-              "originalRequest": {
+              "name": "Crear concierto",
+              "request": {
                 "method": "POST",
                 "header": [
                   {
@@ -1418,6 +1407,7 @@
                     "concerts"
                   ]
                 },
+                "description": "Devuelve 201. Publica el evento ConcertCreatedEvent. Requiere rol ADMIN.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"title\": \"Concierto Nuevo\",\n  \"date\": \"2027-01-20T20:00:00\",\n  \"ticketPrice\": 100,\n  \"artistId\": 2,\n  \"venueId\": 2\n}",
@@ -1428,57 +1418,55 @@
                   }
                 }
               },
-              "status": "Created",
-              "code": 201,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "201 Created",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/concerts",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "concerts"
+                      ]
+                    },
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"title\": \"Concierto Nuevo\",\n  \"date\": \"2027-01-20T20:00:00\",\n  \"ticketPrice\": 100,\n  \"artistId\": 2,\n  \"venueId\": 2\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "Created",
+                  "code": 201,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": 6,\n  \"title\": \"Concierto Nuevo\",\n  \"date\": \"2027-01-20T20:00:00\",\n  \"ticketPrice\": 100,\n  \"imageUrl\": null,\n  \"artist\": {\n    \"id\": 2,\n    \"name\": \"Bad Bunny\",\n    \"country\": \"Puerto Rico\",\n    \"description\": null,\n    \"imageUrl\": null\n  },\n  \"venue\": {\n    \"id\": 2,\n    \"name\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\",\n    \"address\": null,\n    \"capacity\": null\n  }\n}"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"id\": 6,\n  \"title\": \"Concierto Nuevo\",\n  \"date\": \"2027-01-20T20:00:00\",\n  \"ticketPrice\": 100,\n  \"imageUrl\": null,\n  \"artist\": {\n    \"id\": 2,\n    \"name\": \"Bad Bunny\",\n    \"country\": \"Puerto Rico\",\n    \"description\": null,\n    \"imageUrl\": null\n  },\n  \"venue\": {\n    \"id\": 2,\n    \"name\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\",\n    \"address\": null,\n    \"capacity\": null\n  }\n}"
-            }
-          ]
-        },
-        {
-          "name": "Actualizar concierto",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/concerts/3",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "concerts",
-                "3"
               ]
             },
-            "description": " Requiere rol ADMIN.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Bad Bunny en Lima\",\n  \"date\": \"2026-10-12T20:00:00\",\n  \"ticketPrice\": 180,\n  \"artistId\": 2,\n  \"venueId\": 2\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [
             {
-              "name": "200 OK",
-              "originalRequest": {
+              "name": "Actualizar concierto",
+              "request": {
                 "method": "PUT",
                 "header": [
                   {
@@ -1498,6 +1486,7 @@
                     "3"
                   ]
                 },
+                "description": " Requiere rol ADMIN.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"title\": \"Bad Bunny en Lima\",\n  \"date\": \"2026-10-12T20:00:00\",\n  \"ticketPrice\": 180,\n  \"artistId\": 2,\n  \"venueId\": 2\n}",
@@ -1508,47 +1497,60 @@
                   }
                 }
               },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "200 OK",
+                  "originalRequest": {
+                    "method": "PUT",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/concerts/3",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "concerts",
+                        "3"
+                      ]
+                    },
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"title\": \"Bad Bunny en Lima\",\n  \"date\": \"2026-10-12T20:00:00\",\n  \"ticketPrice\": 180,\n  \"artistId\": 2,\n  \"venueId\": 2\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": 3,\n  \"title\": \"Bad Bunny en Lima\",\n  \"date\": \"2026-10-12T20:00:00\",\n  \"ticketPrice\": 180,\n  \"imageUrl\": null,\n  \"artist\": {\n    \"id\": 2,\n    \"name\": \"Bad Bunny\",\n    \"country\": \"Puerto Rico\",\n    \"description\": null,\n    \"imageUrl\": null\n  },\n  \"venue\": {\n    \"id\": 2,\n    \"name\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\",\n    \"address\": null,\n    \"capacity\": null\n  }\n}"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"id\": 3,\n  \"title\": \"Bad Bunny en Lima\",\n  \"date\": \"2026-10-12T20:00:00\",\n  \"ticketPrice\": 180,\n  \"imageUrl\": null,\n  \"artist\": {\n    \"id\": 2,\n    \"name\": \"Bad Bunny\",\n    \"country\": \"Puerto Rico\",\n    \"description\": null,\n    \"imageUrl\": null\n  },\n  \"venue\": {\n    \"id\": 2,\n    \"name\": \"Estadio Nacional\",\n    \"city\": \"Lima\",\n    \"country\": \"Perú\",\n    \"address\": null,\n    \"capacity\": null\n  }\n}"
-            }
-          ]
-        },
-        {
-          "name": "Eliminar concierto",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/concerts/999",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "concerts",
-                "999"
               ]
             },
-            "description": "Devuelve 204. En la peticion de ejemplo se uso un registro temporal recien creado; cambia el id por uno tuyo. Requiere rol ADMIN."
-          },
-          "response": [
             {
-              "name": "204 No Content",
-              "originalRequest": {
+              "name": "Eliminar concierto",
+              "request": {
                 "method": "DELETE",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/api/v1/concerts/6",
+                  "raw": "{{base_url}}/api/v1/concerts/999",
                   "host": [
                     "{{base_url}}"
                   ],
@@ -1556,50 +1558,47 @@
                     "api",
                     "v1",
                     "concerts",
-                    "6"
+                    "999"
                   ]
-                }
+                },
+                "description": "Devuelve 204. En la peticion de ejemplo se uso un registro temporal recien creado; cambia el id por uno tuyo. Requiere rol ADMIN."
               },
-              "status": "No Content",
-              "code": 204,
-              "_postman_previewlanguage": "text",
-              "header": [],
-              "cookie": [],
-              "body": ""
+              "response": [
+                {
+                  "name": "204 No Content",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/concerts/6",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "concerts",
+                        "6"
+                      ]
+                    }
+                  },
+                  "status": "No Content",
+                  "code": 204,
+                  "_postman_previewlanguage": "text",
+                  "header": [],
+                  "cookie": [],
+                  "body": ""
+                }
+              ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "name": "Errores (ejemplos)",
-      "item": [
+        },
         {
-          "name": "404 - Venue inexistente",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/venues/999",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "venues",
-                "999"
-              ]
-            },
-            "description": "Devuelve 404 con ErrorResponseDTO.",
-            "auth": {
-              "type": "noauth"
-            }
-          },
-          "response": [
+          "name": "Errores (ejemplos)",
+          "item": [
             {
-              "name": "404 Not Found",
-              "originalRequest": {
+              "name": "404 - Venue inexistente",
+              "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
@@ -1613,58 +1612,48 @@
                     "venues",
                     "999"
                   ]
+                },
+                "description": "Devuelve 404 con ErrorResponseDTO.",
+                "auth": {
+                  "type": "noauth"
                 }
               },
-              "status": "Not Found",
-              "code": 404,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "404 Not Found",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/venues/999",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "venues",
+                        "999"
+                      ]
+                    }
+                  },
+                  "status": "Not Found",
+                  "code": 404,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"status\": 404,\n  \"error\": \"Not Found\",\n  \"message\": \"Venue no encontrado con id: 999\",\n  \"path\": \"/api/v1/venues/999\",\n  \"timestamp\": \"2026-09-20T17:37:53.654332\"\n}"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"status\": 404,\n  \"error\": \"Not Found\",\n  \"message\": \"Venue no encontrado con id: 999\",\n  \"path\": \"/api/v1/venues/999\",\n  \"timestamp\": \"2026-09-20T17:37:53.654332\"\n}"
-            }
-          ]
-        },
-        {
-          "name": "400 - Validación al crear venue",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/venues",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "venues"
               ]
             },
-            "description": "Devuelve 400 listando cada campo inválido. Requiere rol ADMIN.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [
             {
-              "name": "400 Bad Request",
-              "originalRequest": {
+              "name": "400 - Validación al crear venue",
+              "request": {
                 "method": "POST",
                 "header": [
                   {
@@ -1683,6 +1672,7 @@
                     "venues"
                   ]
                 },
+                "description": "Devuelve 400 listando cada campo inválido. Requiere rol ADMIN.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"\"\n}",
@@ -1693,56 +1683,55 @@
                   }
                 }
               },
-              "status": "Bad Request",
-              "code": 400,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "400 Bad Request",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/venues",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "venues"
+                      ]
+                    },
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "Bad Request",
+                  "code": 400,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"name: El nombre del venue es obligatorio; city: La ciudad es obligatoria; country: El país es obligatorio\",\n  \"path\": \"/api/v1/venues\",\n  \"timestamp\": \"2026-09-20T17:37:53.661177\"\n}"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"name: El nombre del venue es obligatorio; city: La ciudad es obligatoria; country: El país es obligatorio\",\n  \"path\": \"/api/v1/venues\",\n  \"timestamp\": \"2026-09-20T17:37:53.661177\"\n}"
-            }
-          ]
-        },
-        {
-          "name": "409 - Artista duplicado",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/artists",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "artists"
               ]
             },
-            "description": "Devuelve 409 porque el nombre ya existe. Requiere rol ADMIN.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Bad Bunny\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [
             {
-              "name": "409 Conflict",
-              "originalRequest": {
+              "name": "409 - Artista duplicado",
+              "request": {
                 "method": "POST",
                 "header": [
                   {
@@ -1761,6 +1750,7 @@
                     "artists"
                   ]
                 },
+                "description": "Devuelve 409 porque el nombre ya existe. Requiere rol ADMIN.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Bad Bunny\"\n}",
@@ -1771,43 +1761,55 @@
                   }
                 }
               },
-              "status": "Conflict",
-              "code": 409,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "409 Conflict",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/artists",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "artists"
+                      ]
+                    },
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Bad Bunny\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "Conflict",
+                  "code": 409,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"status\": 409,\n  \"error\": \"Conflict\",\n  \"message\": \"Ya existe un artista con el nombre: Bad Bunny\",\n  \"path\": \"/api/v1/artists\",\n  \"timestamp\": \"2026-09-20T17:37:53.66769\"\n}"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"status\": 409,\n  \"error\": \"Conflict\",\n  \"message\": \"Ya existe un artista con el nombre: Bad Bunny\",\n  \"path\": \"/api/v1/artists\",\n  \"timestamp\": \"2026-09-20T17:37:53.66769\"\n}"
-            }
-          ]
-        },
-        {
-          "name": "409 - Borrar venue con conciertos",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/venues/2",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "venues",
-                "2"
               ]
             },
-            "description": "Devuelve 409 mientras el venue tenga conciertos; no borra nada. Requiere rol ADMIN."
-          },
-          "response": [
             {
-              "name": "409 Conflict",
-              "originalRequest": {
+              "name": "409 - Borrar venue con conciertos",
+              "request": {
                 "method": "DELETE",
                 "header": [],
                 "url": {
@@ -1821,54 +1823,45 @@
                     "venues",
                     "2"
                   ]
-                }
+                },
+                "description": "Devuelve 409 mientras el venue tenga conciertos; no borra nada. Requiere rol ADMIN."
               },
-              "status": "Conflict",
-              "code": 409,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"status\": 409,\n  \"error\": \"Conflict\",\n  \"message\": \"No se puede eliminar el venue con id 2 porque tiene conciertos asociados\",\n  \"path\": \"/api/v1/venues/2\",\n  \"timestamp\": \"2026-09-20T17:37:53.674917\"\n}"
-            }
-          ]
-        },
-        {
-          "name": "400 - Fecha inválida en búsqueda",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/concerts/search?date=hola",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "concerts",
-                "search"
-              ],
-              "query": [
-                {
-                  "key": "date",
-                  "value": "hola"
+                  "name": "409 Conflict",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/venues/2",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "venues",
+                        "2"
+                      ]
+                    }
+                  },
+                  "status": "Conflict",
+                  "code": 409,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"status\": 409,\n  \"error\": \"Conflict\",\n  \"message\": \"No se puede eliminar el venue con id 2 porque tiene conciertos asociados\",\n  \"path\": \"/api/v1/venues/2\",\n  \"timestamp\": \"2026-09-20T17:37:53.674917\"\n}"
                 }
               ]
             },
-            "description": "Devuelve 400.",
-            "auth": {
-              "type": "noauth"
-            }
-          },
-          "response": [
             {
-              "name": "400 Bad Request",
-              "originalRequest": {
+              "name": "400 - Fecha inválida en búsqueda",
+              "request": {
                 "method": "GET",
                 "header": [],
                 "url": {
@@ -1888,61 +1881,54 @@
                       "value": "hola"
                     }
                   ]
+                },
+                "description": "Devuelve 400.",
+                "auth": {
+                  "type": "noauth"
                 }
               },
-              "status": "Bad Request",
-              "code": 400,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "400 Bad Request",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/concerts/search?date=hola",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "concerts",
+                        "search"
+                      ],
+                      "query": [
+                        {
+                          "key": "date",
+                          "value": "hola"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "Bad Request",
+                  "code": 400,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Valor inválido para el parámetro 'date'\",\n  \"path\": \"/api/v1/concerts/search\",\n  \"timestamp\": \"2026-09-20T17:37:53.677992\"\n}"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Valor inválido para el parámetro 'date'\",\n  \"path\": \"/api/v1/concerts/search\",\n  \"timestamp\": \"2026-09-20T17:37:53.677992\"\n}"
-            }
-          ]
-        },
-        {
-          "name": "401 - Ruta protegida sin token",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/venues",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "venues"
               ]
             },
-            "description": "Devuelve 401 si no se envía token.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Nuevo Venue\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "auth": {
-              "type": "noauth"
-            }
-          },
-          "response": [
             {
-              "name": "401 Unauthorized",
-              "originalRequest": {
+              "name": "401 - Ruta protegida sin token",
+              "request": {
                 "method": "POST",
                 "header": [
                   {
@@ -1961,6 +1947,7 @@
                     "venues"
                   ]
                 },
+                "description": "Devuelve 401 si no se envía token.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Nuevo Venue\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\"\n}",
@@ -1969,58 +1956,60 @@
                       "language": "json"
                     }
                   }
+                },
+                "auth": {
+                  "type": "noauth"
                 }
               },
-              "status": "Unauthorized",
-              "code": 401,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "401 Unauthorized",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/venues",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "venues"
+                      ]
+                    },
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Nuevo Venue\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "Unauthorized",
+                  "code": 401,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Credenciales inválidas o token no válido\",\n  \"path\": \"/api/v1/venues\",\n  \"timestamp\": \"2026-09-20T17:37:53.679537\"\n}"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Credenciales inválidas o token no válido\",\n  \"path\": \"/api/v1/venues\",\n  \"timestamp\": \"2026-09-20T17:37:53.679537\"\n}"
-            }
-          ]
-        },
-        {
-          "name": "403 - Usuario sin rol ADMIN",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/venues",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "venues"
               ]
             },
-            "description": "Devuelve 403 si el token es de un usuario con rol USER.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Nuevo Venue\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [
             {
-              "name": "403 Forbidden",
-              "originalRequest": {
+              "name": "403 - Usuario sin rol ADMIN",
+              "request": {
                 "method": "POST",
                 "header": [
                   {
@@ -2039,6 +2028,7 @@
                     "venues"
                   ]
                 },
+                "description": "Devuelve 403 si el token es de un usuario con rol USER.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Nuevo Venue\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\"\n}",
@@ -2049,25 +2039,57 @@
                   }
                 }
               },
-              "status": "Forbidden",
-              "code": 403,
-              "_postman_previewlanguage": "json",
-              "header": [
+              "response": [
                 {
-                  "key": "Content-Type",
-                  "value": "application/json"
+                  "name": "403 Forbidden",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{base_url}}/api/v1/venues",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "venues"
+                      ]
+                    },
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Nuevo Venue\",\n  \"city\": \"Lima\",\n  \"country\": \"Perú\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    }
+                  },
+                  "status": "Forbidden",
+                  "code": 403,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"No tienes permisos para realizar esta acción\",\n  \"path\": \"/api/v1/venues\",\n  \"timestamp\": \"2026-09-20T17:37:53.83181\"\n}"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"No tienes permisos para realizar esta acción\",\n  \"path\": \"/api/v1/venues\",\n  \"timestamp\": \"2026-09-20T17:37:53.83181\"\n}"
+              ]
             }
           ]
         }
       ]
-    }
-  ]
-},
-{
+    },
+    {
       "name": "User Interactions (Attendance, Review, Follow)",
       "description": "Endpoints de Persona 3. Todos requieren `Authorization: Bearer {{token}}` (hacer Login primero; el token se guarda solo en la variable `token`).\n\nEl usuario se identifica por el JWT, **no** se envía userId.\n\nFlujo sugerido: Marcar asistencia → Ya fui (concierto pasado) → Crear reseña → Historial.",
       "item": [
