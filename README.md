@@ -1,357 +1,114 @@
 # Concert Tracker - Backend
 
-API REST de Concert Tracker, una aplicación para descubrir conciertos por artista, ciudad o fecha, llevar un registro personal de asistencia y compartir reseñas.
+API REST para descubrir conciertos por artista, ciudad o fecha, registrar la asistencia personal y compartir reseñas. Hecha con Spring Boot, Spring Security (JWT) y PostgreSQL.
 
 ## Funcionalidades Implementadas
 
 ### Descubrimiento (Artist, Concert, Venue)
 
-Todos los endpoints `GET` son públicos. Crear, actualizar y eliminar requiere un token JWT de un usuario con rol `ADMIN` (`Authorization: Bearer <token>`).
+Los `GET` son públicos. Crear, actualizar y eliminar requiere un token de un usuario `ADMIN`.
 
-| Método | Ruta | Acceso | Descripción |
-|---|---|---|---|
-| GET | `/api/v1/venues` | Público | Lista los venues |
-| GET | `/api/v1/venues/{id}` | Público | Detalle de un venue |
-| GET | `/api/v1/venues/{id}/concerts` | Público | Conciertos de un venue, ordenados por fecha |
-| POST | `/api/v1/venues` | ADMIN | Crea un venue (`name`, `city` y `country` obligatorios) |
-| PUT | `/api/v1/venues/{id}` | ADMIN | Actualiza un venue |
-| DELETE | `/api/v1/venues/{id}` | ADMIN | Elimina un venue (409 si tiene conciertos) |
-| GET | `/api/v1/artists` | Público | Lista los artistas |
-| GET | `/api/v1/artists/{id}` | Público | Detalle de un artista |
-| GET | `/api/v1/artists/{id}/concerts` | Público | Otros conciertos de un artista, ordenados por fecha |
-| POST | `/api/v1/artists` | ADMIN | Crea un artista (nombre único) |
-| PUT | `/api/v1/artists/{id}` | ADMIN | Actualiza un artista |
-| DELETE | `/api/v1/artists/{id}` | ADMIN | Elimina un artista (409 si tiene conciertos) |
-| GET | `/api/v1/concerts` | Público | Lista los conciertos, ordenados por fecha |
-| GET | `/api/v1/concerts/{id}` | Público | Detalle del concierto con artista y venue embebidos |
-| GET | `/api/v1/concerts/search` | Público | Búsqueda con filtros (ver abajo) |
-| POST | `/api/v1/concerts` | ADMIN | Crea un concierto y publica `ConcertCreatedEvent` |
-| PUT | `/api/v1/concerts/{id}` | ADMIN | Actualiza un concierto |
-| DELETE | `/api/v1/concerts/{id}` | ADMIN | Elimina un concierto |
+- **Venues:** CRUD en `/api/v1/venues` y `GET /api/v1/venues/{id}/concerts` (conciertos del venue, ordenados por fecha).
+- **Artists:** CRUD en `/api/v1/artists` (nombre único) y `GET /api/v1/artists/{id}/concerts`.
+- **Concerts:** CRUD en `/api/v1/concerts`. El detalle incluye el artista y el venue embebidos. Eliminar un venue o un artista con conciertos responde 409.
 
-**Búsqueda de conciertos** (`GET /api/v1/concerts/search`). Todos los parámetros son opcionales y se pueden combinar:
+**Búsqueda** con `GET /api/v1/concerts/search`, usando Specifications. Los filtros son opcionales y combinables: `artist` (texto parcial), `country`, `city`, `date` (`yyyy-MM-dd`) y `upcoming` (`true` próximos, `false` pasados).
 
-| Parámetro | Ejemplo | Efecto |
-|---|---|---|
-| `artist` | `artist=bad` | Nombre del artista que contiene el texto (sin distinguir mayúsculas) |
-| `country` | `country=Perú` | País del venue |
-| `city` | `city=Lima` | Ciudad del venue |
-| `date` | `date=2026-10-12` | Conciertos de ese día (formato `yyyy-MM-dd`) |
-| `upcoming` | `upcoming=true` | `true` próximos, `false` pasados |
-
-Ejemplo: `GET /api/v1/concerts/search?artist=bad&country=Perú&city=Lima&upcoming=true`
-
-**Aviso al crear un concierto.** Al crear un concierto se publica un `ConcertCreatedEvent` con el id del concierto, el id del artista y el país y la ciudad del venue. Está pensado para que el módulo de interacción lo escuche de forma asíncrona y avise a los usuarios que siguen al artista en esa misma ubicación, sin bloquear la creación.
+Ejemplo: `/api/v1/concerts/search?artist=bad&city=Lima&upcoming=true`
 
 ### Interacción del usuario (Attendance, Review, Follow)
 
-Todos los endpoints requieren token JWT (`Authorization: Bearer <token>`), con rol `USER` o `ADMIN`. El usuario se identifica con el id que viene en el token (`SecurityUtils.getCurrentUserId()`), así que el cliente **no** envía `userId` y nadie puede actuar en nombre de otro.
+Todos requieren token. El usuario se obtiene del JWT (`SecurityUtils.getCurrentUserId()`), así que nadie puede actuar en nombre de otro.
 
-| Método | Ruta | Acceso | Descripción |
-|---|---|---|---|
-| POST | `/api/v1/user-interactions/attendance` | Autenticado | Marca o cambia la asistencia a un concierto (`VOY_A_IR` o `YA_FUI`). Publica `AttendanceCreatedEvent` |
-| GET | `/api/v1/user-interactions/attendance/history` | Autenticado | Historial personal. Filtro opcional `?status=VOY_A_IR` (próximos) o `?status=YA_FUI` (pasados) |
-| POST | `/api/v1/user-interactions/reviews` | Autenticado | Crea una reseña (`rating` de 1 a 5, `comment` opcional). Publica `ReviewCreatedEvent` |
-| POST | `/api/v1/user-interactions/follow` | Autenticado | Sigue a un artista |
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/api/v1/user-interactions/attendance` | Marca o cambia la asistencia (`VOY_A_IR` o `YA_FUI`) |
+| GET | `/api/v1/user-interactions/attendance/history` | Historial, con filtro opcional `?status=` |
+| POST | `/api/v1/user-interactions/reviews` | Crea una reseña (`rating` de 1 a 5) |
+| POST | `/api/v1/user-interactions/follow` | Sigue a un artista |
 
-**Reglas de negocio** (validadas en `UserInteractionServiceImpl`, no en el controller):
+**Reglas de negocio** (en el service):
 
-- Solo se puede dejar una reseña si la asistencia del usuario a ese concierto es `YA_FUI`. Si no registró asistencia, o sigue en `VOY_A_IR`, responde 409.
-- No se puede marcar `YA_FUI` en un concierto cuya fecha todavía no llega (409).
-- Una sola asistencia, una sola reseña por usuario y concierto, y un solo follow por usuario y artista. Si el usuario vuelve a marcar asistencia, se actualiza el estado en lugar de crear otra fila; una reseña o un follow repetido responde 409.
-- El concierto o el artista tienen que existir (404 si no).
-- Los DTOs se validan con Bean Validation (`@NotNull`, `@Min(1)`, `@Max(5)`, `@Size`); un campo faltante o un rating fuera de rango responde 400.
-
-Ejemplo de reseña:
-
-```json
-POST /api/v1/user-interactions/reviews
-{
-  "concertId": 2,
-  "rating": 5,
-  "comment": "Increíble show, el sonido estuvo perfecto."
-}
-```
+- Solo se puede reseñar si la asistencia es `YA_FUI`; si no, responde 409.
+- No se puede marcar `YA_FUI` en un concierto futuro.
+- Solo se permite una reseña por concierto y un follow por artista; los duplicados responden 409.
+- Si el concierto o el artista no existe, responde 404. Los datos inválidos responden 400 (Bean Validation).
 
 ### Manejo de errores
 
-Todos los errores devuelven el mismo formato JSON, generado por `GlobalExceptionHandler`:
-
-```json
-{
-  "timestamp": "2026-09-20T17:03:39.168217",
-  "status": 404,
-  "error": "Not Found",
-  "message": "Venue no encontrado con id: 999",
-  "path": "/api/v1/venues/999"
-}
-```
-
-| Código | Cuándo ocurre |
-|---|---|
-| 400 | Validación de campos, JSON mal formado o parámetro con formato inválido |
-| 401 | Credenciales incorrectas, token no válido o ruta protegida sin token |
-| 403 | El usuario no tiene el rol necesario (por ejemplo, `USER` intentando crear un venue) o la regla de negocio no le permite la operación |
-| 404 | El recurso no existe |
-| 409 | Recurso duplicado o eliminación que dejaría datos huérfanos |
-| 500 | Error interno no controlado |
+`GlobalExceptionHandler` devuelve siempre `{timestamp, status, error, message, path}`. Los códigos son: 400 (validación), 401 (sin token o token inválido), 403 (rol insuficiente), 404 (no existe), 409 (duplicado o conflicto) y 500 (error interno).
 
 ## Seguridad Implementada
 
-Autenticación con JWT y sin sesiones en el servidor (`SessionCreationPolicy.STATELESS`): cada request a una ruta protegida debe llevar `Authorization: Bearer <token>`.
+La autenticación usa JWT y no guarda sesiones en el servidor. Las rutas protegidas llevan `Authorization: Bearer <token>`.
 
-| Método | Ruta | Acceso | Descripción |
-|---|---|---|---|
-| POST | `/api/v1/auth/register` | Público | Crea la cuenta (`name`, `email`, `password` mín. 8 caracteres, `country`/`city` opcionales) y devuelve de una el par de tokens, sin pedir login aparte |
-| POST | `/api/v1/auth/login` | Público | Valida email y contraseña, devuelve un par de tokens nuevo |
-| POST | `/api/v1/auth/refresh` | Público | Cambia un refresh token vigente por un access token nuevo, sin pedir contraseña |
+- `POST /api/v1/auth/register`: crea la cuenta y devuelve los tokens.
+- `POST /api/v1/auth/login`: valida las credenciales y devuelve los tokens.
+- `POST /api/v1/auth/refresh`: entrega un access token nuevo.
 
-Las contraseñas se guardan hasheadas con BCrypt, nunca en texto plano.
+Las contraseñas se guardan con **BCrypt**. El **access token** dura 15 minutos y el **refresh token** 7 días; cada uno lleva un claim `type` para que no se puedan intercambiar. `JwtAuthenticationFilter` valida el token en cada request.
 
-**Tokens.** Hay dos para no forzar un login a cada rato pero tampoco dejar un token robado activo para siempre: el access token dura 15 minutos y es el que va en cada request protegido; el refresh token dura 7 días y solo sirve para pedir un access token nuevo en `/auth/refresh`. Cada uno lleva un claim `type` (`access`/`refresh`) para que no se puedan usar al revés.
+**Roles:** todo usuario empieza como `USER`, y el rol `ADMIN` se asigna manualmente. Las escrituras de catálogo usan `@PreAuthorize("hasRole('ADMIN')")`. Sin token la API responde 401; con un rol insuficiente, 403.
 
-**Roles.** Todo usuario nace `USER`; el rol `ADMIN` se asigna manualmente en la base de datos. Los `GET` de genres, artistas, conciertos y venues son públicos; todo lo demás pide token, y crear, actualizar o eliminar esos recursos pide además `ADMIN` (`@PreAuthorize("hasRole('ADMIN')")` en cada controller). Sin token en una ruta protegida el backend responde 401; con un rol insuficiente responde 403.
-
-### Genre
-
-CRUD con el mismo patrón que los demás recursos: lectura pública, escritura solo ADMIN.
-
-| Método | Ruta | Acceso | Descripción |
-|---|---|---|---|
-| GET | `/api/v1/genres` | Público | Lista los géneros |
-| GET | `/api/v1/genres/{id}` | Público | Detalle de un género |
-| POST | `/api/v1/genres` | ADMIN | Crea un género (nombre único) |
-| PUT | `/api/v1/genres/{id}` | ADMIN | Actualiza un género |
-| DELETE | `/api/v1/genres/{id}` | ADMIN | Elimina un género |
+**Genres:** CRUD en `/api/v1/genres`, con lectura pública y escritura solo para ADMIN.
 
 ## Eventos y Asincronía
 
-Algunas acciones disparan tareas secundarias (como enviar un correo) que no deberían hacer esperar al usuario. Para eso se usan los eventos de Spring: el service publica un evento con `ApplicationEventPublisher` y un listener lo procesa en otro hilo.
+Las tareas secundarias, como enviar un correo, no hacen esperar al usuario. El service publica un evento con `ApplicationEventPublisher` y `EmailNotificationListener` lo procesa en otro hilo.
 
-```
-POST /attendance ──► UserInteractionServiceImpl ──► guarda Attendance
-                              │
-                              └─ publishEvent(AttendanceCreatedEvent) ──► EmailNotificationListener (@Async)
-                                                                          se ejecuta en otro hilo
-◄── 201 Created (responde sin esperar al listener)
-```
+| Evento | Se publica al | Acción del listener |
+|---|---|---|
+| `AttendanceCreatedEvent` | Marcar o cambiar la asistencia | Confirmación de asistencia |
+| `ReviewCreatedEvent` | Crear una reseña | Confirmación de reseña |
+| `ConcertCreatedEvent` | Crear un concierto | Avisa a los seguidores del artista que viven en la misma ciudad y país del venue |
 
-| Evento | Se publica en | Datos | Listener |
-|---|---|---|---|
-| `AttendanceCreatedEvent` | `setOrUpdateAttendance` (crear o cambiar asistencia) | `userId`, `concertId`, `status` | `EmailNotificationListener.handleAttendanceEvent`: confirmación de asistencia |
-| `ReviewCreatedEvent` | `createReview` | `userId`, `concertId`, `rating` | `EmailNotificationListener.handleReviewEvent`: confirmación de reseña |
-| `ConcertCreatedEvent` | `ConcertServiceImpl.create` (módulo de descubrimiento) | `concertId`, `artistId`, `venueCountry`, `venueCity` | Todavía sin listener (ver pendientes) |
-
-**Cómo funciona:**
-
-- Los eventos son `record` inmutables en el paquete `event`, así que el service no depende de quién los escuche.
-- `@EnableAsync` en `BackendApplication` activa la ejecución asíncrona. Sin esta anotación, `@Async` se ignora y el listener correría en el mismo hilo del request.
-- Cada método del listener lleva `@EventListener` (se suscribe al tipo de evento) y `@Async` (corre en el pool de hilos de Spring, `task-*`). Así, si el envío del correo tarda o falla, el endpoint igual responde 201 y los datos quedan guardados.
-
-**Pendientes / limitaciones:**
-
-- Por ahora el "envío de correo" se simula con un log en consola (`[ASYNC EVENT] Enviando email...`). Para enviarlo de verdad hay que agregar `spring-boot-starter-mail` y configurar un servidor SMTP.
-- Falta el listener de `ConcertCreatedEvent` que avise a los seguidores del artista en la misma ciudad.
-- Los listeners usan `@EventListener`, que se ejecuta aunque la transacción luego haga rollback. Con `@TransactionalEventListener(phase = AFTER_COMMIT)` solo se notificaría cuando el dato ya esté guardado.
+- Los eventos son `record` inmutables, así que el service no depende de quién los escucha.
+- `@EnableAsync` activa la ejecución asíncrona, y cada listener usa `@EventListener` + `@Async`. El endpoint responde de inmediato aunque el envío tarde o falle.
+- **Limitación:** el correo se simula con un log. Para enviarlo de verdad hay que agregar `spring-boot-starter-mail` y un servidor SMTP.
 
 ## Modelo de Entidades
 
-### Venue
+| Entidad | Campos principales |
+|---|---|
+| **User** | `name`, `email` (único), `password` (BCrypt), `role`, `country`, `city`, `createdAt` |
+| **Genre** | `name` (único) |
+| **Venue** | `name`, `city`, `country`, `address`, `capacity` |
+| **Artist** | `name` (único), `country`, `description`, `imageUrl` |
+| **Concert** | `title`, `date`, `ticketPrice`, `imageUrl`, `artist`, `venue` |
+| **Attendance** | `userId`, `concertId`, `status` (`VOY_A_IR`/`YA_FUI`), fechas |
+| **Review** | `userId`, `concertId`, `rating` (1-5), `comment` |
+| **Follow** | `userId`, `artistId`, `createdAt` |
 
-Recinto donde se realizan los conciertos.
+**Relaciones:**
 
-| Campo | Tipo | Notas |
-|---|---|---|
-| `id` | Long | Clave primaria |
-| `name` | String | Obligatorio, máximo 150 caracteres |
-| `city` | String | Obligatorio, máximo 100 caracteres |
-| `country` | String | Obligatorio al crear, máximo 100 caracteres |
-| `address` | String | Opcional |
-| `capacity` | Integer | Opcional, positivo |
-
-### Artist
-
-Artista o banda.
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `id` | Long | Clave primaria |
-| `name` | String | Obligatorio y único, máximo 150 caracteres |
-| `country` | String | Opcional |
-| `description` | String | Opcional, máximo 1000 caracteres |
-| `imageUrl` | String | Opcional, URL de la imagen (Cloudinary) |
-
-### Concert
-
-Evento de un artista en un venue.
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `id` | Long | Clave primaria |
-| `title` | String | Opcional |
-| `date` | LocalDateTime | Obligatorio |
-| `ticketPrice` | BigDecimal | Opcional, no negativo |
-| `imageUrl` | String | Opcional, URL del póster |
-| `artist` | Artist | Obligatorio, relación `ManyToOne` |
-| `venue` | Venue | Obligatorio, relación `ManyToOne` |
-
-### User
-
-Cuenta de la aplicación.
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `id` | Long | Clave primaria |
-| `name` | String | Obligatorio, máximo 100 caracteres |
-| `email` | String | Obligatorio y único, formato válido |
-| `password` | String | Obligatorio, se guarda hasheado con BCrypt |
-| `role` | Enum (`USER`, `ADMIN`) | `USER` por defecto al registrarse |
-| `country` / `city` | String | Opcionales |
-| `createdAt` | LocalDateTime | Se asigna sola al crear el usuario |
-
-### Genre
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `id` | Long | Clave primaria |
-| `name` | String | Obligatorio y único, máximo 50 caracteres |
-
-### Attendance
-
-Asistencia de un usuario a un concierto. Tabla `attendances`, con restricción única `(user_id, concert_id)`.
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `id` | Long | Clave primaria |
-| `userId` | Long | Obligatorio, id del usuario (sale del JWT) |
-| `concertId` | Long | Obligatorio, el concierto tiene que existir |
-| `status` | Enum (`VOY_A_IR`, `YA_FUI`) | Obligatorio |
-| `createdAt` / `updatedAt` | LocalDateTime | Se asignan solas al crear y al actualizar |
-
-### Review
-
-Reseña de un concierto. Tabla `reviews`, con restricción única `(user_id, concert_id)`.
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `id` | Long | Clave primaria |
-| `userId` | Long | Obligatorio |
-| `concertId` | Long | Obligatorio, requiere asistencia `YA_FUI` |
-| `rating` | Integer | Obligatorio, de 1 a 5 |
-| `comment` | String | Opcional, máximo 1000 caracteres |
-| `createdAt` | LocalDateTime | Se asigna sola al crear |
-
-### Follow
-
-Un usuario sigue a un artista. Tabla `follows`, con restricción única `(user_id, artist_id)`.
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `id` | Long | Clave primaria |
-| `userId` | Long | Obligatorio |
-| `artistId` | Long | Obligatorio, el artista tiene que existir |
-| `createdAt` | LocalDateTime | Se asigna sola al crear |
-
-### Relaciones
-
-- **Venue → Concert (uno a muchos):** un venue puede albergar muchos conciertos, y cada concierto ocurre en un solo venue.
-- **Artist → Concert (uno a muchos):** un artista puede dar múltiples conciertos, y cada concierto tiene un artista principal.
-- **Genre ↔ Artist (muchos a muchos):** un artista puede tener varios géneros y un género puede estar en varios artistas, mediante la tabla `artist_genres`. Se asignan con `genreIds` al crear o actualizar un artista, y se devuelven como `genres` en la respuesta.
-- **User ↔ Concert mediante Attendance y Review:** son entidades intermedias. Un usuario puede asistir a muchos conciertos y un concierto tiene muchos asistentes; lo mismo con las reseñas. Guardan `userId` y `concertId` como columnas, y la existencia del concierto se valida en el service.
-- **User ↔ Artist mediante Follow:** un usuario puede seguir a muchos artistas y un artista puede tener muchos seguidores.
+- Venue → Concert y Artist → Concert, de uno a muchos.
+- Genre ↔ Artist, de muchos a muchos (tabla `artist_genres`).
+- Attendance y Review son intermedias entre User y Concert, y Follow entre User y Artist, con restricción única por par.
 
 ## Deployment
 
-El backend está desplegado en **AWS** (AWS Academy Learner Lab). El servidor de la aplicación y la base de datos PostgreSQL están en la misma plataforma y en la misma VPC.
-
-### Arquitectura
+El backend está desplegado en **AWS** (Learner Lab), con la aplicación y la base de datos en la misma plataforma.
 
 ```
-Cliente (Postman / frontend)
-        │  HTTP :8080
-        ▼
-Amazon EC2 — Amazon Linux 2023, t3.small, Java 21 (Amazon Corretto)
-  └─ servicio systemd "backend"  →  java -jar app.jar
-        │  JDBC :5432 (red privada de la VPC)
-        ▼
-Amazon RDS for PostgreSQL — db.t4g.micro, single-AZ, sin acceso público
+Cliente ──HTTP :8080──► EC2 (Amazon Linux 2023, Java 21, servicio systemd)
+                              │ JDBC :5432 (red privada)
+                              ▼
+                        RDS PostgreSQL (sin acceso público)
 ```
 
-| Componente | Servicio | Detalle |
-|---|---|---|
-| Aplicación | Amazon EC2 | Clona este repositorio, compila con `./mvnw` y corre el `.jar` como servicio de systemd |
-| Base de datos | Amazon RDS (PostgreSQL) | Base `concert_tracker`; Hibernate crea y actualiza las tablas (`ddl-auto=update`) |
-| Red | Security Groups | EC2 abre los puertos 22 (SSH) y 8080 (API); RDS solo acepta el puerto 5432 desde el security group de EC2 |
+- **EC2** (`t3.small`) clona este repositorio, compila con `./mvnw` y corre el `.jar` como servicio de systemd, que se reinicia solo.
+- **RDS PostgreSQL** (`db.t4g.micro`) contiene la base `concert_tracker`. Hibernate crea las tablas.
+- **Security Groups:** EC2 abre los puertos 22 y 8080; RDS solo acepta el puerto 5432 desde EC2.
 
-### Variables de entorno
+**Variables de entorno** (en `/etc/concert-tracker.env`, fuera del repositorio):
 
-`application.properties` lee la configuración de variables de entorno, con valores por defecto para desarrollo local:
+| Variable | Uso |
+|---|---|
+| `DB_URL` | `jdbc:postgresql://<endpoint-rds>:5432/concert_tracker` |
+| `DB_USERNAME` / `DB_PASSWORD` | Credenciales de RDS |
+| `JWT_SECRET` | Clave de firma, de 32 caracteres o más |
+| `PORT` | Opcional, 8080 por defecto |
 
-| Variable | Ejemplo | Uso |
-|---|---|---|
-| `DB_URL` | `jdbc:postgresql://<endpoint-rds>:5432/concert_tracker` | URL JDBC de la base. Tiene que empezar con `jdbc:postgresql://` |
-| `DB_USERNAME` | `<usuario-maestro-rds>` | Usuario de la base |
-| `DB_PASSWORD` | `********` | Contraseña de la base |
-| `JWT_SECRET` | cadena aleatoria de 32 caracteres o más | Clave para firmar los tokens JWT. Si es más corta, la librería JWT la rechaza |
-| `PORT` | `8080` (opcional) | Puerto HTTP (`server.port=${PORT:8080}`) |
+**Redespliegue desde GitHub:** después de fusionar en `main`, conectarse con EC2 Instance Connect y ejecutar `~/deploy.sh`. El script hace `git pull`, compila y reinicia el servicio. Los logs se revisan con `journalctl -u backend -f`.
 
-En el servidor, las variables están en `/etc/concert-tracker.env`, **fuera del repositorio**, y las carga el servicio con `EnvironmentFile`. Las credenciales nunca se suben a GitHub.
-
-### Servicio systemd
-
-`/etc/systemd/system/backend.service` mantiene el backend corriendo. Lo reinicia si se cae y lo arranca solo cuando se enciende la instancia:
-
-```ini
-[Unit]
-Description=Concert Tracker Backend
-After=network.target
-
-[Service]
-User=ec2-user
-EnvironmentFile=/etc/concert-tracker.env
-ExecStart=/usr/bin/java -jar /home/ec2-user/app.jar
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-### Conexión con GitHub y redespliegue
-
-El servidor tiene un clon de este repositorio (`~/concert-tracker-backend`). El script `~/deploy.sh` baja la última versión de `main`, compila y reinicia el servicio:
-
-```bash
-#!/bin/bash
-set -e
-cd ~/concert-tracker-backend
-git pull
-./mvnw -q clean package -DskipTests
-cp target/*.jar ~/app.jar
-sudo systemctl restart backend
-```
-
-Flujo para publicar un cambio:
-
-1. Fusionar el Pull Request en `main`.
-2. Conectarse a la instancia desde la consola de AWS: **EC2 → Instancias → Conectar → EC2 Instance Connect**.
-3. Ejecutar `~/deploy.sh`.
-4. Revisar los logs con `journalctl -u backend -f` hasta ver `Started BackendApplication`.
-
-### Cómo reproducir el despliegue
-
-1. **RDS:** crear una base PostgreSQL (plantilla Capa gratuita, `db.t4g.micro`, single-AZ, 20 GB gp2/gp3, sin acceso público y con *Nombre de base de datos inicial* = `concert_tracker`).
-2. **EC2:** lanzar una instancia Amazon Linux 2023 (`t3.small`, par de claves `vockey`, perfil `LabInstanceProfile`) con un security group que permita los puertos 22 y 8080.
-3. **Conectar EC2 con RDS:** en RDS, **Acciones → Configurar conexión de EC2**. Así se crean los security groups que permiten el puerto 5432 solo desde la instancia.
-4. **En la instancia:**
-   ```bash
-   sudo dnf install -y java-21-amazon-corretto-devel git
-   git clone https://github.com/waffles-gif/concert-tracker-backend.git
-   ```
-5. Crear `/etc/concert-tracker.env` con las variables de entorno, `~/deploy.sh` y `backend.service` (ver arriba). Luego ejecutar `sudo systemctl daemon-reload && sudo systemctl enable backend` y `~/deploy.sh`.
-6. **Probar:** `GET http://<ip-publica-ec2>:8080/api/v1/genres` debe responder `[]`. En Postman, poner `base_url = http://<ip-publica-ec2>:8080`.
-
-### Consideraciones
-
-- **Learner Lab:** las sesiones duran 4 horas. Al terminar, EC2 y RDS se detienen y se vuelven a encender con *Start Lab*. El backend arranca solo, pero **la IP pública de EC2 cambia**, así que hay que actualizar `base_url` en Postman. El presupuesto del laboratorio es limitado, por eso se usan instancias pequeñas y se hace *End Lab* al terminar.
-- **Diferencias con Railway o Render:** el redespliegue no es automático al hacer push; se ejecuta `~/deploy.sh`. Se podría automatizar con GitHub Actions. La API se sirve por HTTP en el puerto 8080; para producción real se agregaría HTTPS con un balanceador de carga o un proxy inverso.
-- **Usuario ADMIN:** todos los usuarios se registran como `USER`. Para crear géneros, artistas, venues y conciertos, se asigna el rol `ADMIN` manualmente en la base: `UPDATE users SET role='ADMIN' WHERE email='...';`.
+**Consideraciones:** las sesiones del Learner Lab duran 4 horas y la IP pública cambia al reiniciar, así que hay que actualizar `base_url` en Postman. A diferencia de Railway, el despliegue no es automático al hacer push y la API se sirve por HTTP.
