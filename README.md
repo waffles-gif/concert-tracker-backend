@@ -43,6 +43,36 @@ Ejemplo: `GET /api/v1/concerts/search?artist=bad&country=Perú&city=Lima&upcomin
 
 **Aviso al crear un concierto.** Al crear un concierto se publica un `ConcertCreatedEvent` con el id del concierto, el id del artista y el país y la ciudad del venue. Está pensado para que el módulo de interacción lo escuche de forma asíncrona y avise a los usuarios que siguen al artista en esa misma ubicación, sin bloquear la creación.
 
+### Interacción del usuario (Attendance, Review, Follow)
+
+Todos los endpoints requieren token JWT (`Authorization: Bearer <token>`), con rol `USER` o `ADMIN`. El usuario se identifica con el id que viene en el token (`SecurityUtils.getCurrentUserId()`), así que el cliente **no** envía `userId` y nadie puede actuar en nombre de otro.
+
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| POST | `/api/v1/user-interactions/attendance` | Autenticado | Marca o cambia la asistencia a un concierto (`VOY_A_IR` o `YA_FUI`). Publica `AttendanceCreatedEvent` |
+| GET | `/api/v1/user-interactions/attendance/history` | Autenticado | Historial personal. Filtro opcional `?status=VOY_A_IR` (próximos) o `?status=YA_FUI` (pasados) |
+| POST | `/api/v1/user-interactions/reviews` | Autenticado | Crea una reseña (`rating` de 1 a 5, `comment` opcional). Publica `ReviewCreatedEvent` |
+| POST | `/api/v1/user-interactions/follow` | Autenticado | Sigue a un artista |
+
+**Reglas de negocio** (validadas en `UserInteractionServiceImpl`, no en el controller):
+
+- Solo se puede dejar una reseña si la asistencia del usuario a ese concierto es `YA_FUI`. Si no registró asistencia, o sigue en `VOY_A_IR`, responde 409.
+- No se puede marcar `YA_FUI` en un concierto cuya fecha todavía no llega (409).
+- Una sola asistencia, una sola reseña por usuario y concierto, y un solo follow por usuario y artista. Si el usuario vuelve a marcar asistencia, se actualiza el estado en lugar de crear otra fila; una reseña o un follow repetido responde 409.
+- El concierto o el artista tienen que existir (404 si no).
+- Los DTOs se validan con Bean Validation (`@NotNull`, `@Min(1)`, `@Max(5)`, `@Size`); un campo faltante o un rating fuera de rango responde 400.
+
+Ejemplo de reseña:
+
+```json
+POST /api/v1/user-interactions/reviews
+{
+  "concertId": 2,
+  "rating": 5,
+  "comment": "Increíble show, el sonido estuvo perfecto."
+}
+```
+
 ### Manejo de errores
 
 Todos los errores devuelven el mismo formato JSON, generado por `GlobalExceptionHandler`:
@@ -93,6 +123,36 @@ CRUD con el mismo patrón que los demás recursos: lectura pública, escritura s
 | POST | `/api/v1/genres` | ADMIN | Crea un género (nombre único) |
 | PUT | `/api/v1/genres/{id}` | ADMIN | Actualiza un género |
 | DELETE | `/api/v1/genres/{id}` | ADMIN | Elimina un género |
+
+## Eventos y Asincronía
+
+Algunas acciones disparan tareas secundarias (como enviar un correo) que no deberían hacer esperar al usuario. Para eso se usan los eventos de Spring: el service publica un evento con `ApplicationEventPublisher` y un listener lo procesa en otro hilo.
+
+```
+POST /attendance ──► UserInteractionServiceImpl ──► guarda Attendance
+                              │
+                              └─ publishEvent(AttendanceCreatedEvent) ──► EmailNotificationListener (@Async)
+                                                                          se ejecuta en otro hilo
+◄── 201 Created (responde sin esperar al listener)
+```
+
+| Evento | Se publica en | Datos | Listener |
+|---|---|---|---|
+| `AttendanceCreatedEvent` | `setOrUpdateAttendance` (crear o cambiar asistencia) | `userId`, `concertId`, `status` | `EmailNotificationListener.handleAttendanceEvent`: confirmación de asistencia |
+| `ReviewCreatedEvent` | `createReview` | `userId`, `concertId`, `rating` | `EmailNotificationListener.handleReviewEvent`: confirmación de reseña |
+| `ConcertCreatedEvent` | `ConcertServiceImpl.create` (módulo de descubrimiento) | `concertId`, `artistId`, `venueCountry`, `venueCity` | Todavía sin listener (ver pendientes) |
+
+**Cómo funciona:**
+
+- Los eventos son `record` inmutables en el paquete `event`, así que el service no depende de quién los escuche.
+- `@EnableAsync` en `BackendApplication` activa la ejecución asíncrona. Sin esta anotación, `@Async` se ignora y el listener correría en el mismo hilo del request.
+- Cada método del listener lleva `@EventListener` (se suscribe al tipo de evento) y `@Async` (corre en el pool de hilos de Spring, `task-*`). Así, si el envío del correo tarda o falla, el endpoint igual responde 201 y los datos quedan guardados.
+
+**Pendientes / limitaciones:**
+
+- Por ahora el "envío de correo" se simula con un log en consola (`[ASYNC EVENT] Enviando email...`). Para enviarlo de verdad hay que agregar `spring-boot-starter-mail` y configurar un servidor SMTP.
+- Falta el listener de `ConcertCreatedEvent` que avise a los seguidores del artista en la misma ciudad.
+- Los listeners usan `@EventListener`, que se ejecuta aunque la transacción luego haga rollback. Con `@TransactionalEventListener(phase = AFTER_COMMIT)` solo se notificaría cuando el dato ya esté guardado.
 
 ## Modelo de Entidades
 
@@ -156,8 +216,46 @@ Cuenta de la aplicación.
 | `id` | Long | Clave primaria |
 | `name` | String | Obligatorio y único, máximo 50 caracteres |
 
+### Attendance
+
+Asistencia de un usuario a un concierto. Tabla `attendances`, con restricción única `(user_id, concert_id)`.
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `id` | Long | Clave primaria |
+| `userId` | Long | Obligatorio, id del usuario (sale del JWT) |
+| `concertId` | Long | Obligatorio, el concierto tiene que existir |
+| `status` | Enum (`VOY_A_IR`, `YA_FUI`) | Obligatorio |
+| `createdAt` / `updatedAt` | LocalDateTime | Se asignan solas al crear y al actualizar |
+
+### Review
+
+Reseña de un concierto. Tabla `reviews`, con restricción única `(user_id, concert_id)`.
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `id` | Long | Clave primaria |
+| `userId` | Long | Obligatorio |
+| `concertId` | Long | Obligatorio, requiere asistencia `YA_FUI` |
+| `rating` | Integer | Obligatorio, de 1 a 5 |
+| `comment` | String | Opcional, máximo 1000 caracteres |
+| `createdAt` | LocalDateTime | Se asigna sola al crear |
+
+### Follow
+
+Un usuario sigue a un artista. Tabla `follows`, con restricción única `(user_id, artist_id)`.
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `id` | Long | Clave primaria |
+| `userId` | Long | Obligatorio |
+| `artistId` | Long | Obligatorio, el artista tiene que existir |
+| `createdAt` | LocalDateTime | Se asigna sola al crear |
+
 ### Relaciones
 
 - **Venue → Concert (uno a muchos):** un venue puede albergar muchos conciertos, y cada concierto ocurre en un solo venue.
 - **Artist → Concert (uno a muchos):** un artista puede dar múltiples conciertos, y cada concierto tiene un artista principal.
 - **Genre ↔ Artist (muchos a muchos):** un artista puede tener varios géneros y un género puede estar en varios artistas, mediante la tabla `artist_genres`. Se asignan con `genreIds` al crear o actualizar un artista, y se devuelven como `genres` en la respuesta.
+- **User ↔ Concert mediante Attendance y Review:** son entidades intermedias. Un usuario puede asistir a muchos conciertos y un concierto tiene muchos asistentes; lo mismo con las reseñas. Guardan `userId` y `concertId` como columnas, y la existencia del concierto se valida en el service.
+- **User ↔ Artist mediante Follow:** un usuario puede seguir a muchos artistas y un artista puede tener muchos seguidores.
