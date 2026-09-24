@@ -259,3 +259,99 @@ Un usuario sigue a un artista. Tabla `follows`, con restricción única `(user_i
 - **Genre ↔ Artist (muchos a muchos):** un artista puede tener varios géneros y un género puede estar en varios artistas, mediante la tabla `artist_genres`. Se asignan con `genreIds` al crear o actualizar un artista, y se devuelven como `genres` en la respuesta.
 - **User ↔ Concert mediante Attendance y Review:** son entidades intermedias. Un usuario puede asistir a muchos conciertos y un concierto tiene muchos asistentes; lo mismo con las reseñas. Guardan `userId` y `concertId` como columnas, y la existencia del concierto se valida en el service.
 - **User ↔ Artist mediante Follow:** un usuario puede seguir a muchos artistas y un artista puede tener muchos seguidores.
+
+## Deployment
+
+El backend está desplegado en **AWS** (AWS Academy Learner Lab). El servidor de la aplicación y la base de datos PostgreSQL están en la misma plataforma y en la misma VPC.
+
+### Arquitectura
+
+```
+Cliente (Postman / frontend)
+        │  HTTP :8080
+        ▼
+Amazon EC2 — Amazon Linux 2023, t3.small, Java 21 (Amazon Corretto)
+  └─ servicio systemd "backend"  →  java -jar app.jar
+        │  JDBC :5432 (red privada de la VPC)
+        ▼
+Amazon RDS for PostgreSQL — db.t4g.micro, single-AZ, sin acceso público
+```
+
+| Componente | Servicio | Detalle |
+|---|---|---|
+| Aplicación | Amazon EC2 | Clona este repositorio, compila con `./mvnw` y corre el `.jar` como servicio de systemd |
+| Base de datos | Amazon RDS (PostgreSQL) | Base `concert_tracker`; Hibernate crea y actualiza las tablas (`ddl-auto=update`) |
+| Red | Security Groups | EC2 abre los puertos 22 (SSH) y 8080 (API); RDS solo acepta el puerto 5432 desde el security group de EC2 |
+
+### Variables de entorno
+
+`application.properties` lee la configuración de variables de entorno, con valores por defecto para desarrollo local:
+
+| Variable | Ejemplo | Uso |
+|---|---|---|
+| `DB_URL` | `jdbc:postgresql://<endpoint-rds>:5432/concert_tracker` | URL JDBC de la base. Tiene que empezar con `jdbc:postgresql://` |
+| `DB_USERNAME` | `<usuario-maestro-rds>` | Usuario de la base |
+| `DB_PASSWORD` | `********` | Contraseña de la base |
+| `JWT_SECRET` | cadena aleatoria de 32 caracteres o más | Clave para firmar los tokens JWT. Si es más corta, la librería JWT la rechaza |
+| `PORT` | `8080` (opcional) | Puerto HTTP (`server.port=${PORT:8080}`) |
+
+En el servidor, las variables están en `/etc/concert-tracker.env`, **fuera del repositorio**, y las carga el servicio con `EnvironmentFile`. Las credenciales nunca se suben a GitHub.
+
+### Servicio systemd
+
+`/etc/systemd/system/backend.service` mantiene el backend corriendo. Lo reinicia si se cae y lo arranca solo cuando se enciende la instancia:
+
+```ini
+[Unit]
+Description=Concert Tracker Backend
+After=network.target
+
+[Service]
+User=ec2-user
+EnvironmentFile=/etc/concert-tracker.env
+ExecStart=/usr/bin/java -jar /home/ec2-user/app.jar
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### Conexión con GitHub y redespliegue
+
+El servidor tiene un clon de este repositorio (`~/concert-tracker-backend`). El script `~/deploy.sh` baja la última versión de `main`, compila y reinicia el servicio:
+
+```bash
+#!/bin/bash
+set -e
+cd ~/concert-tracker-backend
+git pull
+./mvnw -q clean package -DskipTests
+cp target/*.jar ~/app.jar
+sudo systemctl restart backend
+```
+
+Flujo para publicar un cambio:
+
+1. Fusionar el Pull Request en `main`.
+2. Conectarse a la instancia desde la consola de AWS: **EC2 → Instancias → Conectar → EC2 Instance Connect**.
+3. Ejecutar `~/deploy.sh`.
+4. Revisar los logs con `journalctl -u backend -f` hasta ver `Started BackendApplication`.
+
+### Cómo reproducir el despliegue
+
+1. **RDS:** crear una base PostgreSQL (plantilla Capa gratuita, `db.t4g.micro`, single-AZ, 20 GB gp2/gp3, sin acceso público y con *Nombre de base de datos inicial* = `concert_tracker`).
+2. **EC2:** lanzar una instancia Amazon Linux 2023 (`t3.small`, par de claves `vockey`, perfil `LabInstanceProfile`) con un security group que permita los puertos 22 y 8080.
+3. **Conectar EC2 con RDS:** en RDS, **Acciones → Configurar conexión de EC2**. Así se crean los security groups que permiten el puerto 5432 solo desde la instancia.
+4. **En la instancia:**
+   ```bash
+   sudo dnf install -y java-21-amazon-corretto-devel git
+   git clone https://github.com/waffles-gif/concert-tracker-backend.git
+   ```
+5. Crear `/etc/concert-tracker.env` con las variables de entorno, `~/deploy.sh` y `backend.service` (ver arriba). Luego ejecutar `sudo systemctl daemon-reload && sudo systemctl enable backend` y `~/deploy.sh`.
+6. **Probar:** `GET http://<ip-publica-ec2>:8080/api/v1/genres` debe responder `[]`. En Postman, poner `base_url = http://<ip-publica-ec2>:8080`.
+
+### Consideraciones
+
+- **Learner Lab:** las sesiones duran 4 horas. Al terminar, EC2 y RDS se detienen y se vuelven a encender con *Start Lab*. El backend arranca solo, pero **la IP pública de EC2 cambia**, así que hay que actualizar `base_url` en Postman. El presupuesto del laboratorio es limitado, por eso se usan instancias pequeñas y se hace *End Lab* al terminar.
+- **Diferencias con Railway o Render:** el redespliegue no es automático al hacer push; se ejecuta `~/deploy.sh`. Se podría automatizar con GitHub Actions. La API se sirve por HTTP en el puerto 8080; para producción real se agregaría HTTPS con un balanceador de carga o un proxy inverso.
+- **Usuario ADMIN:** todos los usuarios se registran como `USER`. Para crear géneros, artistas, venues y conciertos, se asigna el rol `ADMIN` manualmente en la base: `UPDATE users SET role='ADMIN' WHERE email='...';`.
