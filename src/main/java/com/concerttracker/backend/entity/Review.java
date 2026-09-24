@@ -14,11 +14,13 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(name = "concert_id", nullable = false)
-    private Long concertId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "concert_id", nullable = false)
+    private Concert concert;
 
     @Column(nullable = false)
     private Integer rating; // Ej: 1 a 5
@@ -31,5 +33,13 @@ public class Review {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    public Long getUserId() {
+        return user != null ? user.getId() : null;
+    }
+
+    public Long getConcertId() {
+        return concert != null ? concert.getId() : null;
     }
 }

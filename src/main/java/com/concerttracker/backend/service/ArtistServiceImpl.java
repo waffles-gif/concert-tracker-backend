@@ -7,7 +7,7 @@ import com.concerttracker.backend.dto.response.GenreResponse;
 import com.concerttracker.backend.entity.Artist;
 import com.concerttracker.backend.entity.Genre;
 import com.concerttracker.backend.exception.DuplicateResourceException;
-import com.concerttracker.backend.exception.InvalidOperationException;
+import com.concerttracker.backend.exception.ResourceInUseException;
 import com.concerttracker.backend.exception.ResourceNotFoundException;
 import com.concerttracker.backend.repository.ArtistRepository;
 import com.concerttracker.backend.repository.ConcertRepository;
@@ -78,7 +78,7 @@ public class ArtistServiceImpl implements ArtistService {
     public void delete(Long id) {
         Artist artist = findEntityById(id);
         if (concertRepository.existsByArtistId(id)) {
-            throw new InvalidOperationException(
+            throw new ResourceInUseException(
                     "No se puede eliminar el artista con id " + id + " porque tiene conciertos asociados");
         }
         artistRepository.delete(artist);

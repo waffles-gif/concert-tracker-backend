@@ -10,11 +10,11 @@ import java.util.Optional;
 @Repository
 public interface FollowRepository extends JpaRepository<Follow, Long> {
 
-    Optional<Follow> findByUserIdAndArtistId(Long userId, Long artistId);
+    Optional<Follow> findByUser_IdAndArtist_Id(Long userId, Long artistId);
 
-    List<Follow> findByUserId(Long userId);
+    List<Follow> findByUser_Id(Long userId);
 
-    List<Follow> findByArtistId(Long artistId);
+    List<Follow> findByArtist_Id(Long artistId);
 
-    boolean existsByUserIdAndArtistId(Long userId, Long artistId);
+    boolean existsByUser_IdAndArtist_Id(Long userId, Long artistId);
 }
