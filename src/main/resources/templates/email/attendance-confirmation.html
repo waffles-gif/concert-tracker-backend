@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmación de asistencia</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 24px;">
+    <div style="max-width: 480px; margin: 0 auto; background: #ffffff; border-radius: 8px; padding: 24px;">
+        <h2 style="color: #1F3A5F;">Concert Tracker</h2>
+        <p th:if="${status == 'VOY_A_IR'}">
+            Confirmamos que marcaste <strong>"voy a ir"</strong> al concierto con id
+            <strong th:text="${concertId}">1</strong>. ¡Nos vemos ahí!
+        </p>
+        <p th:if="${status == 'YA_FUI'}">
+            Registramos que <strong>ya asististe</strong> al concierto con id
+            <strong th:text="${concertId}">1</strong>. Ahora puedes dejar tu reseña.
+        </p>
+        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;">
+        <p style="color: #777777; font-size: 12px;">Este es un correo automático de Concert Tracker.</p>
+    </div>
+</body>
+</html>
