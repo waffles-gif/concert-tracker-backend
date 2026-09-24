@@ -55,7 +55,7 @@ public class EmailNotificationListener {
     @Async
     @EventListener
     public void handleConcertCreatedEvent(ConcertCreatedEvent event) {
-        List<Follow> followers = followRepository.findByArtistId(event.artistId());
+        List<Follow> followers = followRepository.findByArtist_Id(event.artistId());
         for (Follow follow : followers) {
             userRepository.findById(follow.getUserId()).ifPresent(user -> {
                 if (matchesLocation(user, event)) {

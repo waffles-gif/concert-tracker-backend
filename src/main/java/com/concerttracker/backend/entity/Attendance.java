@@ -14,11 +14,13 @@ public class Attendance {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(name = "concert_id", nullable = false)
-    private Long concertId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "concert_id", nullable = false)
+    private Concert concert;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -36,6 +38,14 @@ public class Attendance {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public Long getUserId() {
+        return user != null ? user.getId() : null;
+    }
+
+    public Long getConcertId() {
+        return concert != null ? concert.getId() : null;
     }
 
     public enum AttendanceStatus {

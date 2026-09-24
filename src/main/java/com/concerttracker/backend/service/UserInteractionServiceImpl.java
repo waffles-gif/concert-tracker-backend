@@ -6,10 +6,12 @@ import com.concerttracker.backend.dto.request.ReviewRequestDto;
 import com.concerttracker.backend.dto.request.AttendanceResponseDto;
 import com.concerttracker.backend.dto.request.FollowResponseDto;
 import com.concerttracker.backend.dto.request.ReviewResponseDto;
+import com.concerttracker.backend.entity.Artist;
 import com.concerttracker.backend.entity.Attendance;
 import com.concerttracker.backend.entity.Concert;
 import com.concerttracker.backend.entity.Follow;
 import com.concerttracker.backend.entity.Review;
+import com.concerttracker.backend.entity.User;
 import com.concerttracker.backend.event.AttendanceCreatedEvent;
 import com.concerttracker.backend.event.ReviewCreatedEvent;
 import com.concerttracker.backend.exception.AttendanceNotAllowedException;
@@ -22,6 +24,7 @@ import com.concerttracker.backend.repository.AttendanceRepository;
 import com.concerttracker.backend.repository.ConcertRepository;
 import com.concerttracker.backend.repository.FollowRepository;
 import com.concerttracker.backend.repository.ReviewRepository;
+import com.concerttracker.backend.repository.UserRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +40,7 @@ public class UserInteractionServiceImpl implements UserInteractionService {
     private final FollowRepository followRepository;
     private final ConcertRepository concertRepository;
     private final ArtistRepository artistRepository;
+    private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     public UserInteractionServiceImpl(AttendanceRepository attendanceRepository,
@@ -44,13 +48,20 @@ public class UserInteractionServiceImpl implements UserInteractionService {
                                       FollowRepository followRepository,
                                       ConcertRepository concertRepository,
                                       ArtistRepository artistRepository,
+                                      UserRepository userRepository,
                                       ApplicationEventPublisher eventPublisher) {
         this.attendanceRepository = attendanceRepository;
         this.reviewRepository = reviewRepository;
         this.followRepository = followRepository;
         this.concertRepository = concertRepository;
         this.artistRepository = artistRepository;
+        this.userRepository = userRepository;
         this.eventPublisher = eventPublisher;
+    }
+
+    private User findUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("No existe un usuario con id " + userId));
     }
 
     @Override
@@ -67,10 +78,10 @@ public class UserInteractionServiceImpl implements UserInteractionService {
                     "No puedes marcar 'YA_FUI' en un concierto que aún no se realiza.");
         }
 
-        Attendance attendance = attendanceRepository.findByUserIdAndConcertId(userId, dto.concertId())
+        Attendance attendance = attendanceRepository.findByUser_IdAndConcert_Id(userId, dto.concertId())
                 .orElse(Attendance.builder()
-                        .userId(userId)
-                        .concertId(dto.concertId())
+                        .user(findUser(userId))
+                        .concert(concert)
                         .build());
 
         attendance.setStatus(dto.status());
@@ -91,8 +102,8 @@ public class UserInteractionServiceImpl implements UserInteractionService {
     @Transactional(readOnly = true)
     public List<AttendanceResponseDto> getUserHistory(Long userId, Attendance.AttendanceStatus statusFilter) {
         List<Attendance> list = (statusFilter != null)
-                ? attendanceRepository.findByUserIdAndStatus(userId, statusFilter)
-                : attendanceRepository.findByUserId(userId);
+                ? attendanceRepository.findByUser_IdAndStatus(userId, statusFilter)
+                : attendanceRepository.findByUser_Id(userId);
 
         return list.stream()
                 .map(a -> new AttendanceResponseDto(
@@ -107,12 +118,11 @@ public class UserInteractionServiceImpl implements UserInteractionService {
     @Override
     @Transactional
     public ReviewResponseDto createReview(Long userId, ReviewRequestDto dto) {
-        if (!concertRepository.existsById(dto.concertId())) {
-            throw new ResourceNotFoundException("No existe un concierto con id " + dto.concertId());
-        }
+        Concert concert = concertRepository.findById(dto.concertId())
+                .orElseThrow(() -> new ResourceNotFoundException("No existe un concierto con id " + dto.concertId()));
 
         // Regla de negocio: solo se puede reseñar si la asistencia dice YA_FUI
-        Attendance attendance = attendanceRepository.findByUserIdAndConcertId(userId, dto.concertId())
+        Attendance attendance = attendanceRepository.findByUser_IdAndConcert_Id(userId, dto.concertId())
                 .orElseThrow(() -> new InvalidOperationException(
                         "No puedes dejar una reseña sin haber registrado asistencia previa."));
 
@@ -121,13 +131,13 @@ public class UserInteractionServiceImpl implements UserInteractionService {
                     "Solo puedes dejar una reseña si el estado de tu asistencia es 'YA_FUI'.");
         }
 
-        if (reviewRepository.findByUserIdAndConcertId(userId, dto.concertId()).isPresent()) {
+        if (reviewRepository.findByUser_IdAndConcert_Id(userId, dto.concertId()).isPresent()) {
             throw new DuplicateResourceException("Ya dejaste una reseña para este concierto.");
         }
 
         Review review = Review.builder()
-                .userId(userId)
-                .concertId(dto.concertId())
+                .user(findUser(userId))
+                .concert(concert)
                 .rating(dto.rating())
                 .comment(dto.comment())
                 .build();
@@ -149,17 +159,16 @@ public class UserInteractionServiceImpl implements UserInteractionService {
     @Override
     @Transactional
     public FollowResponseDto followArtist(Long userId, FollowRequestDto dto) {
-        if (!artistRepository.existsById(dto.artistId())) {
-            throw new ResourceNotFoundException("No existe un artista con id " + dto.artistId());
-        }
+        Artist artist = artistRepository.findById(dto.artistId())
+                .orElseThrow(() -> new ResourceNotFoundException("No existe un artista con id " + dto.artistId()));
 
-        if (followRepository.existsByUserIdAndArtistId(userId, dto.artistId())) {
+        if (followRepository.existsByUser_IdAndArtist_Id(userId, dto.artistId())) {
             throw new DuplicateResourceException("Ya sigues a este artista.");
         }
 
         Follow follow = Follow.builder()
-                .userId(userId)
-                .artistId(dto.artistId())
+                .user(findUser(userId))
+                .artist(artist)
                 .build();
 
         Follow saved = followRepository.save(follow);
